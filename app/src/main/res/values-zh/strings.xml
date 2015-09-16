@@ -1,0 +1,42 @@
+<!--
+  ~ Moments - To the best Instagram client
+  ~ Copyright (C) 2015  XiNGRZ <xxx@oxo.ooo>
+  ~
+  ~ This program is free software; you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation; either version 2 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program;  if not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<resources>
+
+    <string name="login">登录</string>
+
+    <string name="proxy">代理设置</string>
+
+    <string name="proxy_host">地址</string>
+    <string name="proxy_port">端口</string>
+    <string name="proxy_enabled">启用</string>
+    <string name="proxy_save">保存设置</string>
+
+    <string name="n_likes">%d 个赞</string>
+
+    <string name="like">赞</string>
+    <string name="comment">评论</string>
+
+    <string name="view_as_stream">卡片视图</string>
+    <string name="view_as_grid">相册视图</string>
+
+    <string name="profile_posts">作品</string>
+    <string name="profile_followers">粉丝</string>
+    <string name="profile_following">关注</string>
+
+</resources>

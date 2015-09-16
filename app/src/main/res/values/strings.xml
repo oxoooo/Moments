@@ -1,0 +1,44 @@
+<!--
+  ~ Moments - To the best Instagram client
+  ~ Copyright (C) 2015  XiNGRZ <xxx@oxo.ooo>
+  ~
+  ~ This program is free software; you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation; either version 2 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program;  if not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<resources>
+
+    <string name="app_name" translatable="false">Moments</string>
+
+    <string name="login">Log In</string>
+
+    <string name="proxy">Proxy settings</string>
+
+    <string name="proxy_host">Host</string>
+    <string name="proxy_port">Port</string>
+    <string name="proxy_enabled">Enable</string>
+    <string name="proxy_save">Save</string>
+
+    <string name="n_likes">%d likes</string>
+
+    <string name="like">Like</string>
+    <string name="comment">Comment</string>
+
+    <string name="view_as_stream">Stream view</string>
+    <string name="view_as_grid">Grid view</string>
+
+    <string name="profile_posts">Posts</string>
+    <string name="profile_followers">Followers</string>
+    <string name="profile_following">Following</string>
+
+</resources>
