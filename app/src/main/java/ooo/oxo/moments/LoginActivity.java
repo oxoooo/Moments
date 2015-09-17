@@ -84,10 +84,7 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
     protected void onResume() {
         super.onResume();
         if (sharedState.hasAccount()) {
-            username.setVisibility(View.GONE);
-            password.setVisibility(View.GONE);
-            login.setVisibility(View.GONE);
-            login(sharedState.getUsername(), sharedState.getPassword());
+            performLogin();
         }
     }
 
@@ -116,13 +113,21 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
 
     @OnClick(R.id.login)
     void login(View v) {
-        login(username.getText().toString(), password.getText().toString());
+        InstaSharedState.getInstance().setAccount(
+                username.getText().toString(),
+                password.getText().toString());
+        performLogin();
     }
 
-    private void login(String username, String password) {
+    private void performLogin() {
+        username.setVisibility(View.GONE);
+        password.setVisibility(View.GONE);
+        login.setVisibility(View.GONE);
+        progress.setVisibility(View.VISIBLE);
+
         LoginForm form = new LoginForm();
-        form.username = username;
-        form.password = password;
+        form.username = sharedState.getUsername();
+        form.password = sharedState.getPassword();
         form.deviceId = sharedState.getDeviceId();
         form.guid = sharedState.getUuid();
 
@@ -141,11 +146,8 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
             username.setVisibility(View.VISIBLE);
             password.setVisibility(View.VISIBLE);
             login.setVisibility(View.VISIBLE);
+            sharedState.setAccount(null, null);
         } else {
-            InstaSharedState.getInstance().setAccount(
-                    username.getText().toString(),
-                    password.getText().toString());
-
             startMainActivity();
         }
     }

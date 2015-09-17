@@ -18,10 +18,8 @@
 
 package ooo.oxo.moments.user;
 
-import android.animation.Animator;
-import android.annotation.TargetApi;
 import android.content.Intent;
-import android.os.Build;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -32,16 +30,11 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
-import android.transition.Transition;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewAnimationUtils;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -58,11 +51,11 @@ import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.api.UserApi;
+import ooo.oxo.moments.databinding.UserActivityBinding;
 import ooo.oxo.moments.feed.FeedAdapter;
 import ooo.oxo.moments.model.User;
 import ooo.oxo.moments.util.StatusBarTintDelegate;
 import ooo.oxo.moments.util.StatusBarUtils;
-import ooo.oxo.moments.util.ViewGroupUtils;
 import pocketknife.BindExtra;
 import pocketknife.NotRequired;
 import pocketknife.PocketKnife;
@@ -95,27 +88,6 @@ public class UserActivity extends AppCompatActivity implements
     @Bind(R.id.avatar)
     ImageView avatar;
 
-    @Bind(R.id.full_name)
-    TextView fullName;
-
-    @Bind(R.id.user_name)
-    TextView userName;
-
-    @Bind(R.id.bio)
-    TextView bio;
-
-    @Bind(R.id.counts)
-    View counts;
-
-    @Bind(R.id.posts)
-    TextView posts;
-
-    @Bind(R.id.followers)
-    TextView followers;
-
-    @Bind(R.id.following)
-    TextView following;
-
     @BindColor(R.color.primary)
     int colorPrimary;
 
@@ -145,6 +117,8 @@ public class UserActivity extends AppCompatActivity implements
     @NotRequired
     String fromPostId;
 
+    private UserActivityBinding binding;
+
     private MenuItem viewAsGrid;
     private MenuItem viewAsStream;
 
@@ -154,15 +128,11 @@ public class UserActivity extends AppCompatActivity implements
     private FeedAdapter streamAdapter;
     private UserGridAdapter gridAdapter;
 
-    private Animator avatarReveal;
-
-    private boolean isEntered = true;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.user_activity);
+        binding = DataBindingUtil.setContentView(this, R.layout.user_activity);
 
         ButterKnife.bind(this);
         PocketKnife.bindExtras(this);
@@ -201,34 +171,8 @@ public class UserActivity extends AppCompatActivity implements
             throw new IllegalStateException("Must specify which user to load");
         }
 
-        if (Build.VERSION.SDK_INT >= 21 && fromPostId != null) {
-            isEntered = false;
-            supportPostponeEnterTransition();
-            ViewCompat.setTransitionName(avatar, fromPostId + "_avatar");
-
-            getWindow().getSharedElementEnterTransition().addListener(new Transition.TransitionListener() {
-                @Override
-                public void onTransitionStart(Transition transition) {
-                }
-
-                @Override
-                public void onTransitionEnd(Transition transition) {
-                    //revealAvatarView();
-                }
-
-                @Override
-                public void onTransitionCancel(Transition transition) {
-                }
-
-                @Override
-                public void onTransitionPause(Transition transition) {
-                }
-
-                @Override
-                public void onTransitionResume(Transition transition) {
-                }
-            });
-        }
+        supportPostponeEnterTransition();
+        ViewCompat.setTransitionName(avatar, fromPostId + "_avatar");
 
         streamAdapter = new FeedAdapter(this, this);
         gridAdapter = new UserGridAdapter(this, this);
@@ -246,8 +190,6 @@ public class UserActivity extends AppCompatActivity implements
     private void load() {
         refresher.post(() -> refresher.setRefreshing(true));
 
-        InstaApplication application = InstaApplication.from(this);
-
         Observable
                 .combineLatest(
                         userApi.infoOf(id),
@@ -259,24 +201,6 @@ public class UserActivity extends AppCompatActivity implements
                         result -> populate(result.first, result.second),
                         throwable -> Log.d(TAG, "failed to load user", throwable)
                 );
-    }
-
-    @TargetApi(21)
-    private void setupAvatarReveal() {  // FIXME: it flashes, unexpectedly
-        int[] bounds = ViewGroupUtils.calculateBounds(avatar, appbar);
-        avatarReveal = ViewAnimationUtils.createCircularReveal(appbar,
-                (int) (bounds[0] + (float) avatar.getWidth() / 2f),
-                (int) (bounds[1] + (float) avatar.getHeight() / 2f),
-                (float) avatar.getWidth() / 2f,
-                (float) bounds[2]);
-    }
-
-    @TargetApi(21)
-    private void revealAvatarView() {
-        if (avatarReveal != null) {
-            avatarReveal.start();
-            avatarReveal = null;
-        }
     }
 
     private void populate(UserApi.UserEnvelope profile, FeedApi.FeedEnvelope timeline) {
@@ -300,35 +224,13 @@ public class UserActivity extends AppCompatActivity implements
                 .listener(this)
                 .into(avatar);
 
-        userName.setText(profile.username);
-
-        if (TextUtils.isEmpty(profile.fullName)) {
-            fullName.setVisibility(View.GONE);
-        } else {
-            fullName.setText(profile.fullName);
-            fullName.setVisibility(View.VISIBLE);
-        }
-
-        if (TextUtils.isEmpty(profile.biography)) {
-            bio.setVisibility(View.GONE);
-        } else {
-            bio.setText(profile.biography);
-            bio.setVisibility(View.VISIBLE);
-        }
-
-        if (profile.mediaCount != -1 && profile.followerCount != -1 && profile.followingCount != -1) {
-            posts.setText(String.valueOf(profile.mediaCount));
-            followers.setText(String.valueOf(profile.followerCount));
-            following.setText(String.valueOf(profile.followingCount));
-            counts.setVisibility(View.VISIBLE);
-        }
+        binding.setUser(profile);
     }
 
     @Override
     public boolean onException(Exception e, String model, Target<GlideDrawable> target,
                                boolean isFirstResource) {
         supportStartPostponedEnterTransition();
-        isEntered = true;
         return false;
     }
 
@@ -336,12 +238,7 @@ public class UserActivity extends AppCompatActivity implements
     public boolean onResourceReady(GlideDrawable resource, String model,
                                    Target<GlideDrawable> target, boolean isFromMemoryCache,
                                    boolean isFirstResource) {
-        if (!isEntered) {
-            //setupAvatarReveal();
-            supportStartPostponedEnterTransition();
-            isEntered = true;
-        }
-
+        supportStartPostponedEnterTransition();
         return false;
     }
 

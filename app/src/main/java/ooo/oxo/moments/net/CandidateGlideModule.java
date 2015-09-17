@@ -16,26 +16,27 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
+package ooo.oxo.moments.net;
+
+import android.content.Context;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.GlideBuilder;
+import com.bumptech.glide.module.GlideModule;
+
+import java.io.InputStream;
+
+import ooo.oxo.moments.model.Media;
+
+public class CandidateGlideModule implements GlideModule {
+
+    @Override
+    public void applyOptions(Context context, GlideBuilder builder) {
     }
 
-    dependencies {
-        classpath "com.android.tools.build:gradle:1.3.0"
-        classpath "com.android.databinding:dataBinder:1.0-rc1"
-        classpath 'me.tatarka:gradle-retrolambda:3.2.2'
+    @Override
+    public void registerComponents(Context context, Glide glide) {
+        glide.register(Media.ImageCandidates.class, InputStream.class, new ImageCandidatesLoader.Factory());
     }
-}
 
-allprojects {
-    repositories {
-        jcenter()
-        mavenCentral()
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

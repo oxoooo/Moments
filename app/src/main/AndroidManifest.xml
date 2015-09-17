@@ -32,6 +32,10 @@
             android:name="ooo.oxo.moments.net.OkHttpGlideModule"
             android:value="GlideModule" />
 
+        <meta-data
+            android:name="ooo.oxo.moments.net.CandidateGlideModule"
+            android:value="GlideModule" />
+
         <activity
             android:name=".LoginActivity"
             android:label="@string/app_name"

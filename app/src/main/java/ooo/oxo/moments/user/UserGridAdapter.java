@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.List;
 
@@ -65,23 +66,9 @@ public class UserGridAdapter extends RecyclerView.Adapter<UserGridAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Media item = feed.get(position);
-
-        Media.Resource image = null;
-
-        if (item.imageVersions != null) {
-            for (Media.Resource version : item.imageVersions.candidates) {
-                if (image == null || version.width > image.width) {
-                    image = version;
-                }
-            }
-        }
-
-        if (image != null) {
-            Glide.with(context)
-                    .load(image.url)
-                    .into(holder.image);
-        }
+        Glide.with(context).load(feed.get(position).imageVersions)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(holder.image);
     }
 
     @Override

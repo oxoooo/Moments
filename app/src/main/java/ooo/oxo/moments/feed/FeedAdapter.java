@@ -90,22 +90,11 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         holder.user.setText(item.user.username);
         holder.time.setText(DATE_FORMAT.format(item.takenAt));
 
-        Media.Resource image = null;
+        holder.image.setOriginalSize(item.originalWidth, item.originalHeight);
 
-        if (item.imageVersions != null) {
-            for (Media.Resource version : item.imageVersions.candidates) {
-                if (image == null || version.width > image.width) {
-                    image = version;
-                }
-            }
-        }
-
-        if (image != null) {
-            holder.image.setOriginalSize(image.width, image.height);
-            Glide.with(context)
-                    .load(image.url)
-                    .into(holder.image);
-        }
+        Glide.with(context).load(item.imageVersions)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(holder.image);
 
         if (item.likeCount > 0) {
             holder.likes.setText(context.getString(R.string.n_likes, item.likeCount));

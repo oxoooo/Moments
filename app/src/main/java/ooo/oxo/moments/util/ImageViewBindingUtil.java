@@ -16,26 +16,22 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
+package ooo.oxo.moments.util;
+
+import android.databinding.BindingAdapter;
+import android.widget.ImageView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+
+public class ImageViewBindingUtil {
+
+    @BindingAdapter("bind:imageUrl")
+    public static void loadImage(ImageView view, String url) {
+        Glide.with(view.getContext())
+                .load(url)
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .into(view);
     }
 
-    dependencies {
-        classpath "com.android.tools.build:gradle:1.3.0"
-        classpath "com.android.databinding:dataBinder:1.0-rc1"
-        classpath 'me.tatarka:gradle-retrolambda:3.2.2'
-    }
-}
-
-allprojects {
-    repositories {
-        jcenter()
-        mavenCentral()
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

@@ -17,6 +17,7 @@
  */
 
 apply plugin: 'com.android.application'
+apply plugin: 'com.android.databinding'
 apply plugin: 'me.tatarka.retrolambda'
 
 android {
@@ -32,18 +33,6 @@ android {
 
         versionCode 1
         versionName "1.0"
-
-        def clientConfig = file('client.properties')
-        if (clientConfig.exists()) {
-            def config = new Properties()
-            config.load(new FileInputStream(clientConfig))
-            for (Map.Entry entry : config) {
-                buildConfigField "String", (String) entry.key, (String) entry.value
-            }
-        } else {
-            buildConfigField "String", "CLIENT_ID", "null"
-            buildConfigField "String", "CLIENT_SECRET", "null"
-        }
     }
 
     compileOptions {

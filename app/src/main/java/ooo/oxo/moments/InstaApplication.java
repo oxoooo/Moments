@@ -56,12 +56,6 @@ public class InstaApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        //noinspection ConstantConditions
-        if (TextUtils.isEmpty(BuildConfig.CLIENT_ID) || TextUtils.isEmpty(BuildConfig.CLIENT_SECRET)) {
-            throw new IllegalStateException("Please create a \"client.properties\" in the same" +
-                    " directory of this module to specify your CLIENT_ID and CLIENT_SECRET.");
-        }
-
         InstaSharedState.createInstance(this);
 
         CookieManager cookieManager = new CookieManager();
