@@ -19,18 +19,17 @@
 package ooo.oxo.moments.user;
 
 import android.content.Context;
+import android.databinding.DataBindingUtil;
+import android.databinding.ViewDataBinding;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import ooo.oxo.moments.BR;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.feed.FeedAdapter;
 import ooo.oxo.moments.model.Media;
@@ -38,14 +37,12 @@ import ooo.oxo.moments.widget.RatioImageView;
 
 public class UserGridAdapter extends RecyclerView.Adapter<UserGridAdapter.ViewHolder> {
 
-    private final Context context;
     private final LayoutInflater inflater;
     private final GridListener listener;
 
     private List<Media> feed;
 
     public UserGridAdapter(Context context, GridListener listener) {
-        this.context = context;
         this.inflater = LayoutInflater.from(context);
         this.listener = listener;
     }
@@ -61,14 +58,13 @@ public class UserGridAdapter extends RecyclerView.Adapter<UserGridAdapter.ViewHo
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(inflater.inflate(R.layout.user_grid_item, parent, false));
+        return new ViewHolder(DataBindingUtil.inflate(inflater, R.layout.user_grid_item, parent, false));
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Glide.with(context).load(feed.get(position).imageVersions)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(holder.image);
+        holder.binding.setVariable(BR.item, feed.get(position));
+        holder.binding.executePendingBindings();
     }
 
     @Override
@@ -84,11 +80,14 @@ public class UserGridAdapter extends RecyclerView.Adapter<UserGridAdapter.ViewHo
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
+        ViewDataBinding binding;
+
         @Bind(R.id.image)
         RatioImageView image;
 
-        public ViewHolder(View itemView) {
-            super(itemView);
+        public ViewHolder(ViewDataBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
             ButterKnife.bind(this, itemView);
             image.setOriginalSize(1, 1);
             itemView.setOnClickListener(v -> listener.onImageClick(this));

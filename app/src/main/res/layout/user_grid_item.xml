@@ -16,17 +16,31 @@
   ~ along with this program;  if not, see <http://www.gnu.org/licenses/>.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_margin="@dimen/item_margin_grid"
-    android:foreground="?selectableItemBackground">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <ooo.oxo.moments.widget.RatioImageView
-        android:id="@+id/image"
+    <data>
+
+        <variable
+            name="item"
+            type="ooo.oxo.moments.model.Media" />
+
+    </data>
+
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:layout_height="320dp" />
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/item_margin_grid"
+        android:foreground="?selectableItemBackground">
 
-</FrameLayout>
+        <ooo.oxo.moments.widget.RatioImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:squareImages="@{item.imageVersions}"
+            tools:layout_height="320dp" />
+
+    </FrameLayout>
+
+</layout>

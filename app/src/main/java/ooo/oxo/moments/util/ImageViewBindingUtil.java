@@ -24,13 +24,34 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
+import jp.wasabeef.glide.transformations.CropCircleTransformation;
+import ooo.oxo.moments.model.Media;
+
 public class ImageViewBindingUtil {
 
-    @BindingAdapter("bind:imageUrl")
-    public static void loadImage(ImageView view, String url) {
+    @BindingAdapter("bind:images")
+    public static void loadImageCandidates(ImageView view, Media.ImageCandidates candidates) {
+        Glide.with(view.getContext())
+                .load(candidates)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(view);
+    }
+
+    @BindingAdapter("bind:squareImages")
+    public static void loadSquareImageCandidates(ImageView view, Media.ImageCandidates candidates) {
+        Glide.with(view.getContext())
+                .load(candidates)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .centerCrop()
+                .into(view);
+    }
+
+    @BindingAdapter("bind:roundImage")
+    public static void loadRoundImage(ImageView view, String url) {
         Glide.with(view.getContext())
                 .load(url)
-                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .bitmapTransform(new CropCircleTransformation(view.getContext()))
                 .into(view);
     }
 

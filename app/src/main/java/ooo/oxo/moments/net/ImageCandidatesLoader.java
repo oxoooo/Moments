@@ -51,8 +51,10 @@ public class ImageCandidatesLoader extends BaseGlideUrlLoader<Media.ImageCandida
                 continue;
             }
 
+            // TODO: Not perfect while has original ratio candidates.
+            // Should find a pair of whose one side is closest to while the other side equals.
             if (candidate.width < width || candidate.height < height) {
-                if (candidate.width >= best.width && candidate.height >= best.width) {
+                if (candidate.width > best.width && candidate.height > best.width) {
                     Log.d(TAG, String.format("prefer larger %dx%d than %dx%d for %dx%d",
                             candidate.width, candidate.height, best.width, best.height,
                             width, height));
@@ -63,7 +65,7 @@ public class ImageCandidatesLoader extends BaseGlideUrlLoader<Media.ImageCandida
                             width, height));
                 }
             } else {
-                if (candidate.width <= best.width && candidate.height <= best.height) {
+                if (candidate.width < best.width && candidate.height < best.height) {
                     Log.d(TAG, String.format("prefer smaller %dx%d than %dx%d for %dx%d",
                             candidate.width, candidate.height, best.width, best.height,
                             width, height));

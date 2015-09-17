@@ -217,14 +217,13 @@ public class UserActivity extends AppCompatActivity implements
     }
 
     private void populateProfile(User profile) {
+        binding.setUser(profile);
         Glide.with(this)
                 .load(profile.profilePicUrl)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .bitmapTransform(new CropCircleTransformation(this))
                 .listener(this)
                 .into(avatar);
-
-        binding.setUser(profile);
     }
 
     @Override

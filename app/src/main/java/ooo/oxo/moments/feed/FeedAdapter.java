@@ -19,7 +19,8 @@
 package ooo.oxo.moments.feed;
 
 import android.content.Context;
-import android.support.v4.view.ViewCompat;
+import android.databinding.DataBindingUtil;
+import android.databinding.ViewDataBinding;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -28,9 +29,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
@@ -38,7 +36,7 @@ import java.util.Locale;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import jp.wasabeef.glide.transformations.CropCircleTransformation;
+import ooo.oxo.moments.BR;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.model.Comment;
 import ooo.oxo.moments.model.Media;
@@ -49,14 +47,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
 
-    private final Context context;
     private final LayoutInflater inflater;
     private final FeedListener listener;
 
     private List<Media> feed;
 
     public FeedAdapter(Context context, FeedListener listener) {
-        this.context = context;
         this.inflater = LayoutInflater.from(context);
         this.listener = listener;
     }
@@ -72,36 +68,18 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(inflater.inflate(R.layout.feed_item, parent, false));
+        return new ViewHolder(DataBindingUtil.inflate(inflater, R.layout.feed_item, parent, false));
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Media item = feed.get(position);
 
-        Glide.with(context)
-                .load(item.user.profilePicUrl)
-                .bitmapTransform(new CropCircleTransformation(context))
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(holder.avatar);
+        holder.binding.setVariable(BR.item, item);
+        holder.binding.executePendingBindings();
 
-        ViewCompat.setTransitionName(holder.avatar, item.id + "_avatar");
-
-        holder.user.setText(item.user.username);
         holder.time.setText(DATE_FORMAT.format(item.takenAt));
-
         holder.image.setOriginalSize(item.originalWidth, item.originalHeight);
-
-        Glide.with(context).load(item.imageVersions)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(holder.image);
-
-        if (item.likeCount > 0) {
-            holder.likes.setText(context.getString(R.string.n_likes, item.likeCount));
-            holder.likes.setVisibility(View.VISIBLE);
-        } else {
-            holder.likes.setVisibility(View.GONE);
-        }
 
         holder.comments.removeAllViews();
         holder.comments.setVisibility(
@@ -159,11 +137,10 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
+        ViewDataBinding binding;
+
         @Bind(R.id.avatar)
         ImageView avatar;
-
-        @Bind(R.id.user)
-        TextView user;
 
         @Bind(R.id.time)
         TextView time;
@@ -171,14 +148,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         @Bind(R.id.image)
         RatioImageView image;
 
-        @Bind(R.id.likes)
-        TextView likes;
-
         @Bind(R.id.comments)
         ViewGroup comments;
 
-        public ViewHolder(View itemView) {
-            super(itemView);
+        public ViewHolder(ViewDataBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
             ButterKnife.bind(this, itemView);
         }
 
