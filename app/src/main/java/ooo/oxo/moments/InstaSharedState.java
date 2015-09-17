@@ -23,6 +23,8 @@ import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import java.util.UUID;
+
 public class InstaSharedState {
 
     private static InstaSharedState instance;
@@ -90,20 +92,55 @@ public class InstaSharedState {
         }
     }
 
-    public boolean hasAccessToken() {
-        return preferences.contains("access_token");
+    public String getUsername() {
+        return preferences.getString("username", "");
     }
 
-    public String getAccessToken() {
-        return preferences.getString("access_token", "");
+    public String getPassword() {
+        return preferences.getString("password", "");
     }
 
-    public boolean setAccessToken(String accessToken) {
-        if (TextUtils.isEmpty(accessToken)) {
-            return preferences.edit().remove("access_token").commit();
-        } else {
-            return preferences.edit().putString("access_token", accessToken).commit();
+    public boolean setAccount(String username, String password) {
+        return preferences.edit()
+                .putString("username", username)
+                .putString("password", password)
+                .commit();
+    }
+
+    public boolean hasAccount() {
+        return !TextUtils.isEmpty(getUsername()) && !TextUtils.isEmpty(getPassword());
+    }
+
+    public String getUuid() {
+        String uuid = preferences.getString("uuid", "");
+
+        if (TextUtils.isEmpty(uuid)) {
+            uuid = UUID.randomUUID().toString();
+            preferences.edit().putString("uuid", uuid).apply();
         }
+
+        return uuid;
+    }
+
+    public String getDeviceId() {
+        String deviceId = preferences.getString("device_id", "");
+
+        if (TextUtils.isEmpty(deviceId)) {
+            deviceId = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+            deviceId = deviceId.substring(deviceId.length() - 16);
+            deviceId = "android-" + deviceId;
+            preferences.edit().putString("device_id", deviceId).apply();
+        }
+
+        return deviceId;
+    }
+
+    public String getCsrfToken() {
+        return preferences.getString("csrf_token", "");
+    }
+
+    public boolean setCsrfToken(String token) {
+        return preferences.edit().putString("csrf_token", token).commit();
     }
 
 }

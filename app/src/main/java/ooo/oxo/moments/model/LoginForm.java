@@ -16,33 +16,18 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.net;
+package ooo.oxo.moments.model;
 
-public class Envelope<T> {
+import ooo.oxo.moments.net.SignedBody;
 
-    public Meta meta;
+public class LoginForm extends SignedBody {
 
-    public T data;
+    public String username;
 
-    public Pagination pagination;
+    public String password;
 
-    public class Meta {
+    public String guid;
 
-        public int code;
-
-        public String errorType;
-
-        public String errorMessage;
-
-    }
-
-    public class Pagination {
-
-        public String nextUrl;
-
-        public String nextMaxId;
-
-    }
-
+    public String deviceId;
 
 }

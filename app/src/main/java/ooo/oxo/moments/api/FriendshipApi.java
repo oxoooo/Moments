@@ -16,28 +16,31 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.net;
+package ooo.oxo.moments.api;
 
-import ooo.oxo.moments.model.AccessToken;
 import retrofit.Call;
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
+import retrofit.http.GET;
 import retrofit.http.POST;
+import retrofit.http.Path;
 
-public interface OauthApi {
+public interface FriendshipApi {
 
-    String REDIRECT_URI = "insta-login://redirect";
+    @GET("v1/friendships/autocomplete_user_list/")
+    Call autocompleteUserList();
 
-    String RESPONSE_TYPE_CODE = "code";
+    @GET("v1/friendships/suggested/")
+    Call suggested();
 
-    String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
+    @GET("v1/friendships/show/{id}/")
+    Call show(@Path("id") String id);
 
-    @FormUrlEncoded
-    @POST("oauth/access_token")
-    Call<AccessToken> accessToken(@Field("client_id") String clientId,
-                                  @Field("client_secret") String clientSecret,
-                                  @Field("grant_type") String grantType,
-                                  @Field("redirect_uri") String redirectUri,
-                                  @Field("code") String code);
+    @POST("v1/friendships/create/{id}/")
+    Call create(@Path("id") String id);
+
+    @POST("v1/friendships/destroy/{id}/")
+    Call destroy(@Path("id") String id);
+
+    @POST("v1/friendships/block/{id}/")
+    Call block(@Path("id") String id);
 
 }

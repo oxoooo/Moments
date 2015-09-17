@@ -18,33 +18,29 @@
 
 package ooo.oxo.moments.net;
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
+import android.util.Log;
+
+import com.squareup.okhttp.Interceptor;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 import java.io.IOException;
-import java.util.Date;
 
-public class TimestampTypeAdapter extends TypeAdapter<Date> {
+public class LoggingInterceptor implements Interceptor {
 
-    @Override
-    public void write(JsonWriter out, Date value) throws IOException {
-        if (value == null) {
-            out.nullValue();
-        } else {
-            out.value(value.getTime() / 1000l);
-        }
-    }
+    private static final String TAG = "OkHttp";
 
     @Override
-    public Date read(JsonReader in) throws IOException {
-        if (in.peek() == JsonToken.NULL) {
-            in.nextNull();
-            return null;
-        } else {
-            return new Date(in.nextLong() * 1000l);
-        }
-    }
+    public Response intercept(Chain chain) throws IOException {
+        Request request = chain.request();
 
+        Log.d(TAG, String.format("%s\n%s",
+                request, request.headers()));
+
+        Response response = chain.proceed(request);
+
+        Log.d(TAG, String.format("%s\n%s", response, response.headers()));
+
+        return response;
+    }
 }

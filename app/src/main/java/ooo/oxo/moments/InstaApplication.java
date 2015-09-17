@@ -22,19 +22,19 @@ import android.app.Application;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Date;
 
+import ooo.oxo.moments.net.LoggingInterceptor;
 import ooo.oxo.moments.net.TimestampTypeAdapter;
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
@@ -43,6 +43,8 @@ import retrofit.RxJavaCallAdapterFactory;
 public class InstaApplication extends Application {
 
     private OkHttpClient httpClient;
+
+    private Gson gson;
 
     private Retrofit retrofit;
 
@@ -62,18 +64,21 @@ public class InstaApplication extends Application {
 
         InstaSharedState.createInstance(this);
 
+        CookieManager cookieManager = new CookieManager();
+        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ORIGINAL_SERVER);
+
         httpClient = new OkHttpClient();
-        httpClient.interceptors().add(chain -> {
-            Request request = chain.request();
-            Log.d("OkHttp", request.toString());
-            Response response = chain.proceed(request);
-            Log.d("OkHttp", response.toString());
-            return response;
-        });
+
+        httpClient.setCookieHandler(cookieManager);
+
+        httpClient.networkInterceptors().add(chain -> chain.proceed(chain.request()
+                .newBuilder().header("User-Agent", "Instagram 7.6.0 Android").build()));
+
+        httpClient.networkInterceptors().add(new LoggingInterceptor());
 
         InstaSharedState.getInstance().applyProxy();
 
-        Gson gson = new GsonBuilder()
+        gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .registerTypeAdapter(Date.class, new TimestampTypeAdapter())
                 .create();
@@ -82,8 +87,12 @@ public class InstaApplication extends Application {
                 .client(httpClient)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .baseUrl("https://api.instagram.com/")
+                .baseUrl("https://i.instagram.com/api/")
                 .build();
+    }
+
+    public Gson getGson() {
+        return gson;
     }
 
     public OkHttpClient getHttpClient() {

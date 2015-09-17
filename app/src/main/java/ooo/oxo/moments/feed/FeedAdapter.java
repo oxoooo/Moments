@@ -80,25 +80,35 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         Media item = feed.get(position);
 
         Glide.with(context)
-                .load(item.user.profilePicture)
+                .load(item.user.profilePicUrl)
                 .bitmapTransform(new CropCircleTransformation(context))
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(holder.avatar);
 
-        ViewCompat.setTransitionName(holder.avatar, item.user.id + "_" + item.id + "_avatar");
+        ViewCompat.setTransitionName(holder.avatar, item.id + "_avatar");
 
         holder.user.setText(item.user.username);
-        holder.time.setText(DATE_FORMAT.format(item.createdTime));
+        holder.time.setText(DATE_FORMAT.format(item.takenAt));
 
-        Media.Resources.Resource image = item.images.standardResolution;
-        holder.image.setOriginalSize(image.width, image.height);
+        Media.Resource image = null;
 
-        Glide.with(context)
-                .load(image.url)
-                .into(holder.image);
+        if (item.imageVersions != null) {
+            for (Media.Resource version : item.imageVersions.candidates) {
+                if (image == null || version.width > image.width) {
+                    image = version;
+                }
+            }
+        }
 
-        if (item.likes.count > 0) {
-            holder.likes.setText(context.getString(R.string.n_likes, item.likes.count));
+        if (image != null) {
+            holder.image.setOriginalSize(image.width, image.height);
+            Glide.with(context)
+                    .load(image.url)
+                    .into(holder.image);
+        }
+
+        if (item.likeCount > 0) {
+            holder.likes.setText(context.getString(R.string.n_likes, item.likeCount));
             holder.likes.setVisibility(View.VISIBLE);
         } else {
             holder.likes.setVisibility(View.GONE);
@@ -106,7 +116,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
         holder.comments.removeAllViews();
         holder.comments.setVisibility(
-                item.caption != null || item.comments.count > 0 ? View.VISIBLE : View.GONE);
+                item.caption != null || item.commentCount > 0 ? View.VISIBLE : View.GONE);
 
         if (item.caption != null) {
             TextView caption = (TextView) inflater.inflate(
@@ -114,7 +124,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
             CharSequence text = CommentTextUtils.format(
                     item.user.username, item.caption.text, item.tags,
-                    () -> listener.onUserClick(item.user.id), null);
+                    () -> listener.onUserClick(item.user.pk), null);
 
             caption.setText(text, TextView.BufferType.SPANNABLE);
             caption.setMovementMethod(LinkMovementMethod.getInstance());
@@ -122,13 +132,13 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             holder.comments.addView(caption);
         }
 
-        for (Comment comment : item.comments.data) {
+        for (Comment comment : item.comments) {
             TextView child = (TextView) inflater.inflate(
                     R.layout.feed_comment_item, holder.comments, false);
 
             CharSequence text = CommentTextUtils.format(
-                    comment.from.username, comment.text,
-                    () -> listener.onUserClick(comment.from.id));
+                    comment.user.username, comment.text,
+                    () -> listener.onUserClick(comment.user.pk));
 
             child.setText(text, TextView.BufferType.SPANNABLE);
             child.setMovementMethod(LinkMovementMethod.getInstance());
@@ -146,7 +156,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
         void onUserClick(ViewHolder holder);
 
-        void onUserClick(String id);
+        void onUserClick(long id);
 
         void onImageClick(ViewHolder holder);
 

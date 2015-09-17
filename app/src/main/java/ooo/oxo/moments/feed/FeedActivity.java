@@ -27,30 +27,31 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import java.util.List;
+import java.io.IOException;
 
 import butterknife.Bind;
 import butterknife.BindColor;
 import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
-import ooo.oxo.moments.InstaSharedState;
 import ooo.oxo.moments.ProxyActivity;
 import ooo.oxo.moments.R;
+import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.model.Media;
-import ooo.oxo.moments.net.Envelope;
-import ooo.oxo.moments.net.UserApi;
 import ooo.oxo.moments.user.UserActivity;
 import ooo.oxo.moments.util.StatusBarTintDelegate;
 import retrofit.Callback;
 import retrofit.Response;
 
 public class FeedActivity extends AppCompatActivity implements
-        Callback<Envelope<List<Media>>>,
+        Callback<FeedApi.FeedEnvelope>,
         SwipeRefreshLayout.OnRefreshListener,
         FeedAdapter.FeedListener {
+
+    private static final String TAG = "FeedActivity";
 
     @Bind(R.id.appbar)
     AppBarLayout appbar;
@@ -67,10 +68,6 @@ public class FeedActivity extends AppCompatActivity implements
     @BindColor(R.color.primary)
     int colorPrimary;
 
-    private String accessToken;
-
-    private UserApi userApi;
-
     private FeedAdapter adapter;
 
     @Override
@@ -81,10 +78,6 @@ public class FeedActivity extends AppCompatActivity implements
         ButterKnife.bind(this);
 
         setSupportActionBar(toolbar);
-
-        accessToken = InstaSharedState.getInstance().getAccessToken();
-
-        userApi = InstaApplication.from(this).createApi(UserApi.class);
 
         appbar.addOnOffsetChangedListener(new StatusBarTintDelegate(this, colorPrimary));
 
@@ -106,7 +99,7 @@ public class FeedActivity extends AppCompatActivity implements
 
     private void load() {
         refresher.post(() -> refresher.setRefreshing(true));
-        userApi.feed(200, accessToken).enqueue(this);
+        InstaApplication.from(this).createApi(FeedApi.class).timeline(null).enqueue(this);
     }
 
     @Override
@@ -127,20 +120,28 @@ public class FeedActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onResponse(Response<Envelope<List<Media>>> response) {
+    public void onResponse(Response<FeedApi.FeedEnvelope> response) {
         refresher.setRefreshing(false);
 
-        Envelope<List<Media>> envelope = response.body();
+        if (response.errorBody() != null) {
+            try {
+                Log.e(TAG, response.errorBody().string());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        FeedApi.FeedEnvelope envelope = response.body();
         if (envelope == null) {
             return;
         }
 
-        adapter.setFeed(envelope.data);
+        adapter.setFeed(envelope.items);
     }
 
     @Override
     public void onFailure(Throwable t) {
-
+        Log.e(TAG, "network failure", t);
     }
 
     @Override
@@ -153,13 +154,13 @@ public class FeedActivity extends AppCompatActivity implements
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                this, holder.avatar, item.user.id + "_" + item.id + "_avatar");
+                this, holder.avatar, item.id + "_avatar");
 
         startActivity(intent, options.toBundle());
     }
 
     @Override
-    public void onUserClick(String id) {
+    public void onUserClick(long id) {
         Intent intent = new Intent(this, UserActivity.class);
         intent.putExtra("id", id);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

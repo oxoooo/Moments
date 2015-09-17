@@ -18,33 +18,24 @@
 
 package ooo.oxo.moments.net;
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
+import com.google.gson.Gson;
+import com.instagram.strings.StringBridge;
 
-import java.io.IOException;
-import java.util.Date;
+import java.util.HashMap;
 
-public class TimestampTypeAdapter extends TypeAdapter<Date> {
+public class SignedBody {
 
-    @Override
-    public void write(JsonWriter out, Date value) throws IOException {
-        if (value == null) {
-            out.nullValue();
-        } else {
-            out.value(value.getTime() / 1000l);
-        }
-    }
+    public String _csrftoken;
+    public String _uid;
+    public String _uuid;
 
-    @Override
-    public Date read(JsonReader in) throws IOException {
-        if (in.peek() == JsonToken.NULL) {
-            in.nextNull();
-            return null;
-        } else {
-            return new Date(in.nextLong() * 1000l);
-        }
+    public static <T extends SignedBody> HashMap<String, String> build(Gson gson, T object, Class<T> type) {
+        String json = gson.toJson(object, type);
+        String signature = StringBridge.getSignatureString(json.getBytes());
+        HashMap<String, String> body = new HashMap<>();
+        body.put("ig_sig_key_version", "4");
+        body.put("signed_body", signature + "." + json);
+        return body;
     }
 
 }

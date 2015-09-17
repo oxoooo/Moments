@@ -16,11 +16,8 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.net;
+package ooo.oxo.moments.api;
 
-import java.util.List;
-
-import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.model.User;
 import retrofit.Call;
 import retrofit.http.GET;
@@ -30,17 +27,16 @@ import rx.Observable;
 
 public interface UserApi {
 
-    @GET("v1/users/self/feed")
-    Call<Envelope<List<Media>>> feed(@Query("count") int count,
-                                     @Query("access_token") String accessToken);
+    @GET("v1/users/{id}/info/")
+    Observable<UserEnvelope> infoOf(@Path("id") long id);
 
-    @GET("v1/users/{id}")
-    Observable<Envelope<User>> profile(@Path("id") String id,
-                                       @Query("access_token") String accessToken);
+    @GET("v1/users/search/")
+    Call search(@Query("q") String query);
 
-    @GET("v1/users/{id}/media/recent")
-    Observable<Envelope<List<Media>>> timeline(@Path("id") String id,
-                                               @Query("count") int count,
-                                               @Query("access_token") String accessToken);
+    class UserEnvelope {
+
+        public User user;
+
+    }
 
 }

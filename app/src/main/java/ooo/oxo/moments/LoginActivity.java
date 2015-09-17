@@ -19,33 +19,41 @@
 package ooo.oxo.moments;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.HashMap;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import ooo.oxo.moments.api.AccountApi;
 import ooo.oxo.moments.feed.FeedActivity;
-import ooo.oxo.moments.model.AccessToken;
-import ooo.oxo.moments.net.OauthApi;
-import ooo.oxo.moments.net.OauthUtils;
+import ooo.oxo.moments.model.LoginForm;
+import ooo.oxo.moments.net.SignedBody;
 import retrofit.Callback;
 import retrofit.Response;
 
-public class LoginActivity extends AppCompatActivity implements Callback<AccessToken> {
+public class LoginActivity extends AppCompatActivity implements Callback<AccountApi.LoginEnvelope> {
 
     private static final String TAG = "LoginActivity";
 
     @Bind(R.id.toolbar)
     Toolbar toolbar;
+
+    @Bind(R.id.username)
+    TextView username;
+
+    @Bind(R.id.password)
+    TextView password;
 
     @Bind(R.id.login)
     View login;
@@ -55,35 +63,31 @@ public class LoginActivity extends AppCompatActivity implements Callback<AccessT
 
     private Handler handler = new Handler(Looper.getMainLooper());
 
+    private InstaApplication application;
+    private InstaSharedState sharedState;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        application = InstaApplication.from(this);
+        sharedState = InstaSharedState.getInstance();
 
         setContentView(R.layout.login_activity);
         ButterKnife.bind(this);
 
         setSupportActionBar(toolbar);
         setTitle(null);
-
-        OauthApi oauthApi = InstaApplication.from(this).createApi(OauthApi.class);
-
-        Uri data = getIntent().getData();
-        if (data != null && "insta-login".equals(data.getScheme())) {
-            String code = data.getQueryParameter("code");
-            if (!TextUtils.isEmpty(code)) {
-                login.setVisibility(View.GONE);
-                progress.setVisibility(View.VISIBLE);
-                OauthUtils.accessToken(oauthApi, code).enqueue(this);
-            }
-        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (InstaSharedState.getInstance().hasAccessToken()) {
+        if (sharedState.hasAccount()) {
+            username.setVisibility(View.GONE);
+            password.setVisibility(View.GONE);
             login.setVisibility(View.GONE);
-            startMainActivity();
+            login(sharedState.getUsername(), sharedState.getPassword());
         }
     }
 
@@ -112,35 +116,43 @@ public class LoginActivity extends AppCompatActivity implements Callback<AccessT
 
     @OnClick(R.id.login)
     void login(View v) {
-        Uri uri = Uri.parse("https://api.instagram.com/oauth/authorize/").buildUpon()
-                .appendQueryParameter("client_id", BuildConfig.CLIENT_ID)
-                .appendQueryParameter("redirect_uri", OauthApi.REDIRECT_URI)
-                .appendQueryParameter("response_type", OauthApi.RESPONSE_TYPE_CODE)
-                .appendQueryParameter("scope", "comments relationships likes")
-                .build();
+        login(username.getText().toString(), password.getText().toString());
+    }
 
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(uri);
-        intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+    private void login(String username, String password) {
+        LoginForm form = new LoginForm();
+        form.username = username;
+        form.password = password;
+        form.deviceId = sharedState.getDeviceId();
+        form.guid = sharedState.getUuid();
 
-        startActivity(intent);
+        HashMap<String, String> body = SignedBody.build(
+                application.getGson(), form, LoginForm.class);
+
+        application.createApi(AccountApi.class).login(body).enqueue(this);
     }
 
     @Override
-    public void onResponse(Response<AccessToken> response) {
+    public void onResponse(Response<AccountApi.LoginEnvelope> response) {
         progress.setVisibility(View.GONE);
-        login.setVisibility(View.VISIBLE);
 
-        AccessToken token = response.body();
-        if (token != null) {
-            InstaSharedState.getInstance().setAccessToken(token.accessToken);
+        if (response.body() == null) {
+            Toast.makeText(this, "登录失败", Toast.LENGTH_SHORT).show();
+            username.setVisibility(View.VISIBLE);
+            password.setVisibility(View.VISIBLE);
+            login.setVisibility(View.VISIBLE);
+        } else {
+            InstaSharedState.getInstance().setAccount(
+                    username.getText().toString(),
+                    password.getText().toString());
+
             startMainActivity();
         }
     }
 
     @Override
     public void onFailure(Throwable t) {
+        Toast.makeText(this, "网络错误", Toast.LENGTH_SHORT).show();
     }
 
     private void startMainActivity() {

@@ -16,18 +16,14 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.model;
+package com.instagram.strings;
 
-import java.util.Date;
+public class StringBridge {
 
-public class Comment {
+    static {
+        System.loadLibrary("strings");
+    }
 
-    public long pk;
-
-    public String text;
-
-    public Date createdAt;
-
-    public User user;
+    public static native String getSignatureString(byte[] input);
 
 }

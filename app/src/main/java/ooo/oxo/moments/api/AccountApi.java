@@ -16,18 +16,32 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.model;
+package ooo.oxo.moments.api;
 
-import java.util.Date;
+import java.util.HashMap;
 
-public class Comment {
+import ooo.oxo.moments.model.User;
+import retrofit.Call;
+import retrofit.http.FieldMap;
+import retrofit.http.FormUrlEncoded;
+import retrofit.http.POST;
 
-    public long pk;
+public interface AccountApi {
 
-    public String text;
+    @FormUrlEncoded
+    @POST("v1/accounts/login/")
+    Call<LoginEnvelope> login(@FieldMap HashMap<String, String> signedBody);
 
-    public Date createdAt;
+    @POST("v1/accounts/logout/")
+    Call logout(@FieldMap HashMap<String, String> signedBody);
 
-    public User user;
+    @POST("v1/accounts/change_profile_picture/")
+    Call changeProfilePicture();
+
+    class LoginEnvelope {
+
+        public User loggedInUser;
+
+    }
 
 }

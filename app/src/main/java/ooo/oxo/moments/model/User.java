@@ -36,28 +36,30 @@ public class User implements Parcelable {
         }
     };
 
-    public String id;
+    public long pk;
 
     public String username;
 
     public String fullName;
 
-    public String profilePicture;
+    public String profilePicUrl;
 
     @Nullable
-    public String bio;
+    public String biography;
 
     @Nullable
-    public String website;
+    public String externalUrl;
 
-    @Nullable
-    public Counts counts;
+    public int mediaCount = -1;
+    public int followerCount = -1;
+    public int followingCount = -1;
+    public int usertagsCount = -1;
 
     protected User(Parcel in) {
-        id = in.readString();
+        pk = in.readLong();
         username = in.readString();
         fullName = in.readString();
-        profilePicture = in.readString();
+        profilePicUrl = in.readString();
     }
 
     @Override
@@ -67,20 +69,10 @@ public class User implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(id);
+        dest.writeLong(pk);
         dest.writeString(username);
         dest.writeString(fullName);
-        dest.writeString(profilePicture);
-    }
-
-    public class Counts {
-
-        public int media;
-
-        public int follows;
-
-        public int followedBy;
-
+        dest.writeString(profilePicUrl);
     }
 
 }

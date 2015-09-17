@@ -6,21 +6,6 @@ To be the best unofficial Instagram app
 - Material Design
 - HTTP Proxy support
 
-## Build
-
-1. Create `app/client.properties`
-
-   ```
-   CLIENT_ID = "YOUR CLIENT ID HERE"
-   CLIENT_SECRET = "YOU CLIENT SECRET HERE"
-   ```
-
-2. Build it
-
-   ```shell
-   ./gradlew build
-   ```
-
 ## Third-party libraries used
 
 - [SystemBarTint](https://github.com/jgilfelt/SystemBarTint)

@@ -16,18 +16,35 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.model;
+package ooo.oxo.moments.api;
 
-import java.util.Date;
+import java.util.List;
 
-public class Comment {
+import ooo.oxo.moments.model.Media;
+import retrofit.Call;
+import retrofit.http.GET;
+import retrofit.http.Path;
+import retrofit.http.Query;
+import rx.Observable;
 
-    public long pk;
+public interface FeedApi {
 
-    public String text;
+    @GET("v1/feed/timeline/")
+    Call<FeedEnvelope> timeline(@Query("max_id") String maxId);
 
-    public Date createdAt;
+    @GET("v1/feed/popular/")
+    Call popular(@Query("max_id") String maxId);
 
-    public User user;
+    @GET("v1/feed/user/{id}/")
+    Observable<FeedEnvelope> ofUser(@Path("id") long id, @Query("max_id") String maxId);
+
+    @GET("v1/feed/liked/")
+    Call liked(@Query("max_id") String maxId);
+
+    class FeedEnvelope {
+
+        public List<Media> items;
+
+    }
 
 }

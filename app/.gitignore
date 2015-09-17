@@ -1,2 +1,4 @@
 /build
-/client.properties
+libgnustl_shared.so
+libscrambler.so
+libstrings.so

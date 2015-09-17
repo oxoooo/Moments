@@ -67,11 +67,21 @@ public class UserGridAdapter extends RecyclerView.Adapter<UserGridAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, int position) {
         Media item = feed.get(position);
 
-        Media.Resources.Resource image = item.images.standardResolution;
+        Media.Resource image = null;
 
-        Glide.with(context)
-                .load(image.url)
-                .into(holder.image);
+        if (item.imageVersions != null) {
+            for (Media.Resource version : item.imageVersions.candidates) {
+                if (image == null || version.width > image.width) {
+                    image = version;
+                }
+            }
+        }
+
+        if (image != null) {
+            Glide.with(context)
+                    .load(image.url)
+                    .into(holder.image);
+        }
     }
 
     @Override

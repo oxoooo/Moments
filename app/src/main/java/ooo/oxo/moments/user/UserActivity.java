@@ -49,21 +49,17 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 
-import java.util.List;
-
 import butterknife.Bind;
 import butterknife.BindColor;
 import butterknife.BindDimen;
 import butterknife.ButterKnife;
 import jp.wasabeef.glide.transformations.CropCircleTransformation;
 import ooo.oxo.moments.InstaApplication;
-import ooo.oxo.moments.InstaSharedState;
 import ooo.oxo.moments.R;
+import ooo.oxo.moments.api.FeedApi;
+import ooo.oxo.moments.api.UserApi;
 import ooo.oxo.moments.feed.FeedAdapter;
-import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.model.User;
-import ooo.oxo.moments.net.Envelope;
-import ooo.oxo.moments.net.UserApi;
 import ooo.oxo.moments.util.StatusBarTintDelegate;
 import ooo.oxo.moments.util.StatusBarUtils;
 import ooo.oxo.moments.util.ViewGroupUtils;
@@ -139,7 +135,7 @@ public class UserActivity extends AppCompatActivity implements
 
     @BindExtra("id")
     @NotRequired
-    String id;
+    long id;
 
     @BindExtra("user")
     @NotRequired
@@ -152,8 +148,7 @@ public class UserActivity extends AppCompatActivity implements
     private MenuItem viewAsGrid;
     private MenuItem viewAsStream;
 
-    private String accessToken;
-
+    private FeedApi feedApi;
     private UserApi userApi;
 
     private FeedAdapter streamAdapter;
@@ -190,26 +185,26 @@ public class UserActivity extends AppCompatActivity implements
         refresher.setColorSchemeColors(colorPrimary);
         refresher.setOnRefreshListener(this);
 
-        accessToken = InstaSharedState.getInstance().getAccessToken();
-
-        userApi = InstaApplication.from(this).createApi(UserApi.class);
+        InstaApplication application = InstaApplication.from(this);
+        feedApi = application.createApi(FeedApi.class);
+        userApi = application.createApi(UserApi.class);
 
         if (user != null) {
             populateProfile(user);
         }
 
-        if (id == null && user != null) {
-            id = user.id;
+        if (id == 0 && user != null) {
+            id = user.pk;
         }
 
-        if (id == null) {
+        if (id == 0) {
             throw new IllegalStateException("Must specify which user to load");
         }
 
         if (Build.VERSION.SDK_INT >= 21 && fromPostId != null) {
             isEntered = false;
             supportPostponeEnterTransition();
-            ViewCompat.setTransitionName(avatar, id + "_" + fromPostId + "_avatar");
+            ViewCompat.setTransitionName(avatar, fromPostId + "_avatar");
 
             getWindow().getSharedElementEnterTransition().addListener(new Transition.TransitionListener() {
                 @Override
@@ -251,11 +246,13 @@ public class UserActivity extends AppCompatActivity implements
     private void load() {
         refresher.post(() -> refresher.setRefreshing(true));
 
+        InstaApplication application = InstaApplication.from(this);
+
         Observable
                 .combineLatest(
-                        userApi.profile(id, accessToken),
-                        userApi.timeline(id, 200, accessToken),
-                        (Func2<Envelope<User>, Envelope<List<Media>>, Pair<Envelope<User>, Envelope<List<Media>>>>) Pair::new
+                        userApi.infoOf(id),
+                        feedApi.ofUser(id, null),
+                        (Func2<UserApi.UserEnvelope, FeedApi.FeedEnvelope, Pair<UserApi.UserEnvelope, FeedApi.FeedEnvelope>>) Pair::new
                 )
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -282,22 +279,22 @@ public class UserActivity extends AppCompatActivity implements
         }
     }
 
-    private void populate(Envelope<User> profile, Envelope<List<Media>> timeline) {
+    private void populate(UserApi.UserEnvelope profile, FeedApi.FeedEnvelope timeline) {
         refresher.setRefreshing(false);
 
         if (profile == null || timeline == null) {
             return;
         }
 
-        streamAdapter.setFeed(timeline.data);
-        gridAdapter.setFeed(timeline.data);
+        streamAdapter.setFeed(timeline.items);
+        gridAdapter.setFeed(timeline.items);
 
-        populateProfile(profile.data);
+        populateProfile(profile.user);
     }
 
     private void populateProfile(User profile) {
         Glide.with(this)
-                .load(profile.profilePicture)
+                .load(profile.profilePicUrl)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .bitmapTransform(new CropCircleTransformation(this))
                 .listener(this)
@@ -312,17 +309,17 @@ public class UserActivity extends AppCompatActivity implements
             fullName.setVisibility(View.VISIBLE);
         }
 
-        if (TextUtils.isEmpty(profile.bio)) {
+        if (TextUtils.isEmpty(profile.biography)) {
             bio.setVisibility(View.GONE);
         } else {
-            bio.setText(profile.bio);
+            bio.setText(profile.biography);
             bio.setVisibility(View.VISIBLE);
         }
 
-        if (profile.counts != null) {
-            posts.setText(String.valueOf(profile.counts.media));
-            followers.setText(String.valueOf(profile.counts.followedBy));
-            following.setText(String.valueOf(profile.counts.follows));
+        if (profile.mediaCount != -1 && profile.followerCount != -1 && profile.followingCount != -1) {
+            posts.setText(String.valueOf(profile.mediaCount));
+            followers.setText(String.valueOf(profile.followerCount));
+            following.setText(String.valueOf(profile.followingCount));
             counts.setVisibility(View.VISIBLE);
         }
     }
@@ -353,8 +350,8 @@ public class UserActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onUserClick(String id) {
-        if (this.id.equals(id)) {
+    public void onUserClick(long id) {
+        if (this.id == id) {
             return;
         }
 

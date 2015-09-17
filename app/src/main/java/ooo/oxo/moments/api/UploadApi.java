@@ -16,12 +16,14 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.model;
+package ooo.oxo.moments.api;
 
-public class AccessToken {
+import retrofit.Call;
+import retrofit.http.POST;
 
-    public String accessToken;
+public interface UploadApi {
 
-    public User user;
+    @POST("v1/upload/photo/")
+    Call photo();
 
 }

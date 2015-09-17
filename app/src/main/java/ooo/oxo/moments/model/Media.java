@@ -18,87 +18,70 @@
 
 package ooo.oxo.moments.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Date;
 import java.util.List;
 
 public class Media {
 
-    public static final String TYPE_IMAGE = "image";
-    public static final String TYPE_VIDEO = "video";
+    public static final int TYPE_IMAGE = 1;
+    public static final int TYPE_VIDEO = 2;
+
+    public long pk;
 
     public String id;
 
-    public String type;
+    public int mediaType;
 
-    public Date createdTime;
+    public int originalWidth;
+    public int originalHeight;
 
-    public Resources images;
+    public boolean hasLiked;
 
-    public Resources videos;
+    public String code;
+
+    public int likeCount;
+    public List<User> likers;
+
+    public int commentCount;
+    public List<Comment> comments;
+    public boolean hasMoreComments;
+
+    public Date takenAt;
+
+    public boolean photoOfYou;
 
     public Caption caption;
 
-    public Comments comments;
-
     public List<String> tags;
-
-    public String link;
 
     public User user;
 
-    public Likes likes;
+    @SerializedName("image_versions2")
+    public ImageCandidates imageVersions;
 
-    public Location location;
+    public class ImageCandidates {
+
+        public List<Resource> candidates;
+
+    }
+
+    public class Resource {
+
+        public String url;
+
+        public int width;
+
+        public int height;
+
+    }
 
     public class Caption {
 
         public String text;
 
-    }
-
-    public class Comments {
-
-        public List<Comment> data;
-
-        public int count;
-
-    }
-
-    public class Resources {
-
-        public Resource lowResolution;
-
-        public Resource thumbnail;
-
-        public Resource standardResolution;
-
-        public class Resource {
-
-            public String url;
-
-            public int width;
-
-            public int height;
-
-        }
-
-    }
-
-    public class Likes {
-
-        public int count;
-
-    }
-
-    public class Location {
-
-        public String id;
-
-        public String name;
-
-        public double latitude;
-
-        public double longitude;
+        public Date createdAt;
 
     }
 

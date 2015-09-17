@@ -23,4 +23,9 @@
         <item name="android:windowContentTransitions">true</item>
     </style>
 
+    <style name="LoginTheme" parent="LoginThemeBase">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowContentTransitions">true</item>
+    </style>
+
 </resources>

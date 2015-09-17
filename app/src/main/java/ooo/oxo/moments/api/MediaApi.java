@@ -16,17 +16,26 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.net;
+package ooo.oxo.moments.api;
 
-import ooo.oxo.moments.BuildConfig;
-import ooo.oxo.moments.model.AccessToken;
 import retrofit.Call;
+import retrofit.http.GET;
+import retrofit.http.POST;
+import retrofit.http.Path;
+import retrofit.http.Query;
 
-public class OauthUtils {
+public interface MediaApi {
 
-    public static Call<AccessToken> accessToken(OauthApi api, String code) {
-        return api.accessToken(BuildConfig.CLIENT_ID, BuildConfig.CLIENT_SECRET,
-                OauthApi.GRANT_TYPE_AUTHORIZATION_CODE, OauthApi.REDIRECT_URI, code);
-    }
+    @POST("v1/media/configure/")
+    Call configure();
+
+    @POST("v1/media/{id}/like/")
+    Call like(@Path("id") String id);
+
+    @POST("v1/media/{id}/comment/")
+    Call comment(@Path("id") String id);
+
+    @GET("v1/media/{id}/comments/")
+    Call commentsOf(@Path("id") String id, @Query("max_id") String maxId);
 
 }
