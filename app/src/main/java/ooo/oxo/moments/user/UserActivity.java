@@ -22,27 +22,22 @@ import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
 
-import butterknife.Bind;
+import java.util.List;
+
 import butterknife.BindColor;
 import butterknife.BindDimen;
 import butterknife.ButterKnife;
@@ -53,7 +48,9 @@ import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.api.UserApi;
 import ooo.oxo.moments.databinding.UserActivityBinding;
 import ooo.oxo.moments.feed.FeedAdapter;
+import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.model.User;
+import ooo.oxo.moments.util.RxEndlessRecyclerView;
 import ooo.oxo.moments.util.StatusBarTintDelegate;
 import ooo.oxo.moments.util.StatusBarUtils;
 import pocketknife.BindExtra;
@@ -61,32 +58,14 @@ import pocketknife.NotRequired;
 import pocketknife.PocketKnife;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func2;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class UserActivity extends AppCompatActivity implements
-        SwipeRefreshLayout.OnRefreshListener,
         UserGridAdapter.GridListener,
         RequestListener<String, GlideDrawable> {
 
     private static final String TAG = "UserActivity";
-
-    @Bind(R.id.appbar)
-    AppBarLayout appbar;
-
-    @Bind(R.id.collapsing_toolbar)
-    CollapsingToolbarLayout collapsingToolbar;
-
-    @Bind(R.id.toolbar)
-    Toolbar toolbar;
-
-    @Bind(R.id.refresher)
-    SwipeRefreshLayout refresher;
-
-    @Bind(R.id.content)
-    RecyclerView content;
-
-    @Bind(R.id.avatar)
-    ImageView avatar;
 
     @BindColor(R.color.primary)
     int colorPrimary;
@@ -119,13 +98,18 @@ public class UserActivity extends AppCompatActivity implements
 
     private UserActivityBinding binding;
 
+    private CompositeSubscription subscriptions = new CompositeSubscription();
+
     private MenuItem viewAsGrid;
     private MenuItem viewAsStream;
 
     private FeedApi feedApi;
     private UserApi userApi;
 
+    private LinearLayoutManager streamLayoutManager;
     private FeedAdapter streamAdapter;
+
+    private GridLayoutManager gridLayoutManager;
     private UserGridAdapter gridAdapter;
 
     @Override
@@ -138,22 +122,22 @@ public class UserActivity extends AppCompatActivity implements
         PocketKnife.bindExtras(this);
 
         setTitle(null);
-        setSupportActionBar(toolbar);
+        setSupportActionBar(binding.toolbar);
 
         statusBarHeight = StatusBarUtils.getStatusBarHeight(this);
 
-        collapsingToolbar.setPadding(0, statusBarHeight, 0, 0);
+        binding.collapsingToolbar.setPadding(0, statusBarHeight, 0, 0);
 
-        appbar.addOnOffsetChangedListener((AppBarLayout appbar, int i) -> refresher.setEnabled(i == 0));
+        binding.appbar.addOnOffsetChangedListener(
+                (AppBarLayout appbar, int i) -> binding.refresher.setEnabled(i == 0));
 
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
-        toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
-        toolbar.post(() -> appbar.addOnOffsetChangedListener(new StatusBarTintDelegate(
-                this, toolbar.getHeight(), statusBarHeight)));
+        binding.toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
+        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.post(() -> binding.appbar.addOnOffsetChangedListener(new StatusBarTintDelegate(
+                this, binding.toolbar.getHeight(), statusBarHeight)));
 
-        refresher.setProgressViewOffset(true, refresherStart, refresherStart + refresherLength);
-        refresher.setColorSchemeColors(colorPrimary);
-        refresher.setOnRefreshListener(this);
+        binding.refresher.setProgressViewOffset(true, refresherStart, refresherStart + refresherLength);
+        binding.refresher.setColorSchemeColors(colorPrimary);
 
         InstaApplication application = InstaApplication.from(this);
         feedApi = application.createApi(FeedApi.class);
@@ -172,48 +156,103 @@ public class UserActivity extends AppCompatActivity implements
         }
 
         supportPostponeEnterTransition();
-        ViewCompat.setTransitionName(avatar, fromPostId + "_avatar");
+        ViewCompat.setTransitionName(binding.avatar, fromPostId + "_avatar");
 
+        streamLayoutManager = new LinearLayoutManager(this);
         streamAdapter = new FeedAdapter(this, this);
+
+        gridLayoutManager = new GridLayoutManager(this, 3);
         gridAdapter = new UserGridAdapter(this, this);
 
         viewAsStream();
+
+        setupEndlessLoading();
+        setupRefresh();
 
         load();
     }
 
     @Override
-    public void onRefresh() {
-        load();
+    protected void onDestroy() {
+        super.onDestroy();
+        subscriptions.unsubscribe();
+    }
+
+    private String getId(int position) {
+        if (binding.content.getLayoutManager() == streamLayoutManager) {
+            return streamAdapter.get(position).id;
+        } else if (binding.content.getLayoutManager() == gridLayoutManager) {
+            return gridAdapter.get(position).id;
+        } else {
+            return null;
+        }
+    }
+
+    private void addAll(List<Media> items) {
+        if (binding.content.getLayoutManager() == streamLayoutManager) {
+            streamAdapter.addAll(items);
+        } else if (binding.content.getLayoutManager() == gridLayoutManager) {
+            gridAdapter.addAll(items);
+        }
+    }
+
+    private void replaceWith(List<Media> items) {
+        streamAdapter.addAll(items);
+        gridAdapter.addAll(items);
+    }
+
+    private void subscribeAppending(Observable<FeedApi.FeedEnvelope> observable) {
+        observable = observable.cache();
+
+        subscriptions.add(observable
+                .subscribe(envelope -> binding.refresher.setRefreshing(false)));
+
+        subscriptions.add(observable
+                .filter(envelope -> envelope.items != null)
+                .subscribe(envelope -> addAll(envelope.items)));
+    }
+
+    private void subscribeRefreshing(Observable<FeedApi.FeedEnvelope> observable) {
+        observable = observable.cache();
+
+        subscriptions.add(observable
+                .subscribe(envelope -> binding.refresher.setRefreshing(false)));
+
+        subscriptions.add(observable
+                .filter(envelope -> envelope.items != null)
+                .subscribe(envelope -> replaceWith(envelope.items)));
+    }
+
+    private void setupEndlessLoading() {
+        subscribeAppending(RxEndlessRecyclerView.reachesEnd(binding.content)
+                .flatMap(position -> {
+                    binding.refresher.setRefreshing(true);
+                    return loadFeed(getId(position));
+                }));
+    }
+
+    private void setupRefresh() {
+        // FIXME: 找不到优雅的方式同时刷新用户资料
+        subscribeRefreshing(RxSwipeRefreshLayout.refreshes(binding.refresher)
+                .flatMap(avoid -> loadFeed(null)));
     }
 
     private void load() {
-        refresher.post(() -> refresher.setRefreshing(true));
-
-        Observable
-                .combineLatest(
-                        userApi.infoOf(id),
-                        feedApi.ofUser(id, null),
-                        (Func2<UserApi.UserEnvelope, FeedApi.FeedEnvelope, Pair<UserApi.UserEnvelope, FeedApi.FeedEnvelope>>) Pair::new
-                )
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        result -> populate(result.first, result.second),
-                        throwable -> Log.d(TAG, "failed to load user", throwable)
-                );
+        binding.refresher.post(() -> binding.refresher.setRefreshing(true));
+        loadUser().subscribe(envelope -> populateProfile(envelope.user));
+        subscribeRefreshing(loadFeed(null));
     }
 
-    private void populate(UserApi.UserEnvelope profile, FeedApi.FeedEnvelope timeline) {
-        refresher.setRefreshing(false);
+    private Observable<FeedApi.FeedEnvelope> loadFeed(String maxId) {
+        return feedApi.ofUser(id, maxId)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
 
-        if (profile == null || timeline == null) {
-            return;
-        }
-
-        streamAdapter.setFeed(timeline.items);
-        gridAdapter.setFeed(timeline.items);
-
-        populateProfile(profile.user);
+    private Observable<UserApi.UserEnvelope> loadUser() {
+        return userApi.infoOf(id)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     private void populateProfile(User profile) {
@@ -223,7 +262,7 @@ public class UserActivity extends AppCompatActivity implements
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .bitmapTransform(new CropCircleTransformation(this))
                 .listener(this)
-                .into(avatar);
+                .into(binding.avatar);
     }
 
     @Override
@@ -309,15 +348,15 @@ public class UserActivity extends AppCompatActivity implements
     }
 
     private void viewAsStream() {
-        content.setPadding(marginStream, marginStream, marginStream, marginStream);
-        content.setLayoutManager(new LinearLayoutManager(this));
-        content.setAdapter(streamAdapter);
+        binding.content.setPadding(marginStream, marginStream, marginStream, marginStream);
+        binding.content.setLayoutManager(streamLayoutManager);
+        binding.content.setAdapter(streamAdapter);
     }
 
     private void viewAsGrid() {
-        content.setPadding(marginGrid, marginGrid, marginGrid, marginGrid);
-        content.setLayoutManager(new GridLayoutManager(this, 3));
-        content.setAdapter(gridAdapter);
+        binding.content.setPadding(marginGrid, marginGrid, marginGrid, marginGrid);
+        binding.content.setLayoutManager(gridLayoutManager);
+        binding.content.setAdapter(gridAdapter);
     }
 
 }

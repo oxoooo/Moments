@@ -17,8 +17,7 @@
   -->
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
 
@@ -38,8 +37,10 @@
             android:id="@+id/image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:squareImages="@{item.imageVersions}"
-            tools:layout_height="320dp" />
+            android:scaleType="centerCrop"
+            app:images="@{item.imageVersions}"
+            app:originalHeight="1"
+            app:originalWidth="1" />
 
     </FrameLayout>
 

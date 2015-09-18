@@ -19,57 +19,33 @@
 package ooo.oxo.moments.user;
 
 import android.content.Context;
-import android.databinding.DataBindingUtil;
-import android.databinding.ViewDataBinding;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import java.util.List;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import ooo.oxo.moments.BR;
-import ooo.oxo.moments.R;
+import ooo.oxo.moments.databinding.UserGridItemBinding;
 import ooo.oxo.moments.feed.FeedAdapter;
 import ooo.oxo.moments.model.Media;
-import ooo.oxo.moments.widget.RatioImageView;
+import ooo.oxo.moments.widget.ArrayRecyclerAdapter;
 
-public class UserGridAdapter extends RecyclerView.Adapter<UserGridAdapter.ViewHolder> {
+public class UserGridAdapter extends ArrayRecyclerAdapter<Media, UserGridAdapter.ViewHolder> {
 
     private final LayoutInflater inflater;
     private final GridListener listener;
-
-    private List<Media> feed;
 
     public UserGridAdapter(Context context, GridListener listener) {
         this.inflater = LayoutInflater.from(context);
         this.listener = listener;
     }
 
-    public List<Media> getFeed() {
-        return feed;
-    }
-
-    public void setFeed(List<Media> feed) {
-        this.feed = feed;
-        notifyDataSetChanged();
-    }
-
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(DataBindingUtil.inflate(inflater, R.layout.user_grid_item, parent, false));
+        return new ViewHolder(UserGridItemBinding.inflate(inflater, parent, false));
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.binding.setVariable(BR.item, feed.get(position));
-        holder.binding.executePendingBindings();
-    }
-
-    @Override
-    public int getItemCount() {
-        return feed == null ? 0 : feed.size();
+        holder.binding.setItem(get(position));
     }
 
     public interface GridListener extends FeedAdapter.FeedListener {
@@ -80,16 +56,11 @@ public class UserGridAdapter extends RecyclerView.Adapter<UserGridAdapter.ViewHo
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        ViewDataBinding binding;
+        UserGridItemBinding binding;
 
-        @Bind(R.id.image)
-        RatioImageView image;
-
-        public ViewHolder(ViewDataBinding binding) {
+        public ViewHolder(UserGridItemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
-            ButterKnife.bind(this, itemView);
-            image.setOriginalSize(1, 1);
             itemView.setOnClickListener(v -> listener.onImageClick(this));
         }
 

@@ -27,11 +27,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import java.io.IOException;
+import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
 
 import butterknife.Bind;
 import butterknife.BindColor;
@@ -42,13 +41,14 @@ import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.user.UserActivity;
+import ooo.oxo.moments.util.RxEndlessRecyclerView;
 import ooo.oxo.moments.util.StatusBarTintDelegate;
-import retrofit.Callback;
-import retrofit.Response;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class FeedActivity extends AppCompatActivity implements
-        Callback<FeedApi.FeedEnvelope>,
-        SwipeRefreshLayout.OnRefreshListener,
         FeedAdapter.FeedListener {
 
     private static final String TAG = "FeedActivity";
@@ -68,6 +68,11 @@ public class FeedActivity extends AppCompatActivity implements
     @BindColor(R.color.primary)
     int colorPrimary;
 
+    private FeedApi feedApi;
+
+    private CompositeSubscription subscriptions = new CompositeSubscription();
+
+    private LinearLayoutManager layoutManager;
     private FeedAdapter adapter;
 
     @Override
@@ -82,24 +87,73 @@ public class FeedActivity extends AppCompatActivity implements
         appbar.addOnOffsetChangedListener(new StatusBarTintDelegate(this, colorPrimary));
 
         refresher.setColorSchemeColors(colorPrimary);
-        refresher.setOnRefreshListener(this);
+
+        layoutManager = new LinearLayoutManager(this);
 
         adapter = new FeedAdapter(this, this);
 
-        content.setLayoutManager(new LinearLayoutManager(this));
+        content.setLayoutManager(layoutManager);
         content.setAdapter(adapter);
+
+        feedApi = InstaApplication.from(this).createApi(FeedApi.class);
+
+        setupEndlessLoading();
+        setupRefresh();
 
         load();
     }
 
     @Override
-    public void onRefresh() {
-        load();
+    protected void onDestroy() {
+        super.onDestroy();
+        subscriptions.unsubscribe();
+    }
+
+    private void subscribeAppending(Observable<FeedApi.FeedEnvelope> observable) {
+        observable = observable.cache();
+
+        subscriptions.add(observable
+                .subscribe(envelope -> refresher.setRefreshing(false)));
+
+        subscriptions.add(observable
+                .filter(envelope -> envelope.items != null)
+                .subscribe(envelope -> adapter.addAll(envelope.items)));
+    }
+
+    private void subscribeRefreshing(Observable<FeedApi.FeedEnvelope> observable) {
+        observable = observable.cache();
+
+        subscriptions.add(observable
+                .subscribe(envelope -> refresher.setRefreshing(false)));
+
+        subscriptions.add(observable
+                .filter(envelope -> envelope.items != null)
+                .subscribe(envelope -> adapter.replaceWith(envelope.items)));
+    }
+
+    private void setupEndlessLoading() {
+        subscribeAppending(RxEndlessRecyclerView.reachesEnd(content)
+                .flatMap(position -> {
+                    refresher.setRefreshing(true);
+                    return load(adapter.get(position).id);
+                }));
+    }
+
+    private void setupRefresh() {
+        subscribeRefreshing(RxSwipeRefreshLayout.refreshes(refresher)
+                .flatMap(avoid -> load(null)));
     }
 
     private void load() {
         refresher.post(() -> refresher.setRefreshing(true));
-        InstaApplication.from(this).createApi(FeedApi.class).timeline(null).enqueue(this);
+        subscribeRefreshing(load(null));
+    }
+
+    private Observable<FeedApi.FeedEnvelope> load(String maxId) {
+        return feedApi.timeline(maxId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .cache();
     }
 
     @Override
@@ -120,33 +174,8 @@ public class FeedActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onResponse(Response<FeedApi.FeedEnvelope> response) {
-        refresher.setRefreshing(false);
-
-        if (response.errorBody() != null) {
-            try {
-                Log.e(TAG, response.errorBody().string());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        FeedApi.FeedEnvelope envelope = response.body();
-        if (envelope == null) {
-            return;
-        }
-
-        adapter.setFeed(envelope.items);
-    }
-
-    @Override
-    public void onFailure(Throwable t) {
-        Log.e(TAG, "network failure", t);
-    }
-
-    @Override
     public void onUserClick(FeedAdapter.ViewHolder holder) {
-        Media item = adapter.getFeed().get(holder.getAdapterPosition());
+        Media item = adapter.get(holder.getAdapterPosition());
 
         Intent intent = new Intent(this, UserActivity.class);
         intent.putExtra("user", item.user);
@@ -154,7 +183,7 @@ public class FeedActivity extends AppCompatActivity implements
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                this, holder.avatar, item.id + "_avatar");
+                this, holder.binding.avatar, item.id + "_avatar");
 
         startActivity(intent, options.toBundle());
     }

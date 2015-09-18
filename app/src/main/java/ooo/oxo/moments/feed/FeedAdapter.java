@@ -19,75 +19,58 @@
 package ooo.oxo.moments.feed;
 
 import android.content.Context;
-import android.databinding.DataBindingUtil;
-import android.databinding.ViewDataBinding;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.Locale;
 
-import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import ooo.oxo.moments.BR;
 import ooo.oxo.moments.R;
+import ooo.oxo.moments.databinding.FeedItemBinding;
 import ooo.oxo.moments.model.Comment;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.text.CommentTextUtils;
-import ooo.oxo.moments.widget.RatioImageView;
+import ooo.oxo.moments.widget.ArrayRecyclerAdapter;
 
-public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
+public class FeedAdapter extends ArrayRecyclerAdapter<Media, FeedAdapter.ViewHolder> {
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
 
     private final LayoutInflater inflater;
     private final FeedListener listener;
 
-    private List<Media> feed;
-
     public FeedAdapter(Context context, FeedListener listener) {
         this.inflater = LayoutInflater.from(context);
         this.listener = listener;
     }
 
-    public List<Media> getFeed() {
-        return feed;
-    }
-
-    public void setFeed(List<Media> feed) {
-        this.feed = feed;
-        notifyDataSetChanged();
-    }
-
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(DataBindingUtil.inflate(inflater, R.layout.feed_item, parent, false));
+        return new ViewHolder(FeedItemBinding.inflate(inflater, parent, false));
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Media item = feed.get(position);
+        Media item = get(position);
 
-        holder.binding.setVariable(BR.item, item);
-        holder.binding.executePendingBindings();
+        holder.binding.setItem(item);
 
-        holder.time.setText(DATE_FORMAT.format(item.takenAt));
-        holder.image.setOriginalSize(item.originalWidth, item.originalHeight);
+        holder.binding.time.setText(DATE_FORMAT.format(item.takenAt));
+        holder.binding.image.setOriginalSize(item.originalWidth, item.originalHeight);
 
-        holder.comments.removeAllViews();
-        holder.comments.setVisibility(
+        holder.binding.comments.removeAllViews();
+        holder.binding.comments.setVisibility(
                 item.caption != null || item.commentCount > 0 ? View.VISIBLE : View.GONE);
 
         if (item.caption != null) {
             TextView caption = (TextView) inflater.inflate(
-                    R.layout.feed_comment_item, holder.comments, false);
+                    R.layout.feed_comment_item, holder.binding.comments, false);
 
             CharSequence text = CommentTextUtils.format(
                     item.user.username, item.caption.text, item.tags,
@@ -96,12 +79,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             caption.setText(text, TextView.BufferType.SPANNABLE);
             caption.setMovementMethod(LinkMovementMethod.getInstance());
 
-            holder.comments.addView(caption);
+            holder.binding.comments.addView(caption);
         }
 
         for (Comment comment : item.comments) {
             TextView child = (TextView) inflater.inflate(
-                    R.layout.feed_comment_item, holder.comments, false);
+                    R.layout.feed_comment_item, holder.binding.comments, false);
 
             CharSequence text = CommentTextUtils.format(
                     comment.user.username, comment.text,
@@ -110,13 +93,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             child.setText(text, TextView.BufferType.SPANNABLE);
             child.setMovementMethod(LinkMovementMethod.getInstance());
 
-            holder.comments.addView(child);
+            holder.binding.comments.addView(child);
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return feed == null ? 0 : feed.size();
     }
 
     public interface FeedListener {
@@ -137,21 +115,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        ViewDataBinding binding;
+        FeedItemBinding binding;
 
-        @Bind(R.id.avatar)
-        ImageView avatar;
-
-        @Bind(R.id.time)
-        TextView time;
-
-        @Bind(R.id.image)
-        RatioImageView image;
-
-        @Bind(R.id.comments)
-        ViewGroup comments;
-
-        public ViewHolder(ViewDataBinding binding) {
+        public ViewHolder(FeedItemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
             ButterKnife.bind(this, itemView);

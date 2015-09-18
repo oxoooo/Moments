@@ -61,6 +61,11 @@ public class Media {
     @SerializedName("image_versions2")
     public ImageCandidates imageVersions;
 
+    @Override
+    public boolean equals(Object o) {
+        return this == o || ((o instanceof Media) && ((Media) o).id.equals(id));
+    }
+
     public class ImageCandidates {
 
         public List<Resource> candidates;

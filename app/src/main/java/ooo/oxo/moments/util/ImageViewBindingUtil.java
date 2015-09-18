@@ -37,15 +37,6 @@ public class ImageViewBindingUtil {
                 .into(view);
     }
 
-    @BindingAdapter("bind:squareImages")
-    public static void loadSquareImageCandidates(ImageView view, Media.ImageCandidates candidates) {
-        Glide.with(view.getContext())
-                .load(candidates)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .centerCrop()
-                .into(view);
-    }
-
     @BindingAdapter("bind:roundImage")
     public static void loadRoundImage(ImageView view, String url) {
         Glide.with(view.getContext())

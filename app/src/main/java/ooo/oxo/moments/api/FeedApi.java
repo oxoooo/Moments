@@ -30,7 +30,7 @@ import rx.Observable;
 public interface FeedApi {
 
     @GET("v1/feed/timeline/")
-    Call<FeedEnvelope> timeline(@Query("max_id") String maxId);
+    Observable<FeedEnvelope> timeline(@Query("max_id") String maxId);
 
     @GET("v1/feed/popular/")
     Call popular(@Query("max_id") String maxId);
