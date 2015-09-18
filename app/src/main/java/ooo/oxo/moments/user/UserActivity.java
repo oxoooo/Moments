@@ -131,7 +131,6 @@ public class UserActivity extends AppCompatActivity implements
         binding.appbar.addOnOffsetChangedListener(
                 (AppBarLayout appbar, int i) -> binding.refresher.setEnabled(i == 0));
 
-        binding.toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
         binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
         binding.toolbar.post(() -> binding.appbar.addOnOffsetChangedListener(new StatusBarTintDelegate(
                 this, binding.toolbar.getHeight(), statusBarHeight)));

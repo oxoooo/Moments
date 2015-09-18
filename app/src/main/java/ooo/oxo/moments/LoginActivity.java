@@ -38,6 +38,7 @@ import butterknife.OnClick;
 import ooo.oxo.moments.api.AccountApi;
 import ooo.oxo.moments.feed.FeedActivity;
 import ooo.oxo.moments.model.LoginForm;
+import ooo.oxo.moments.model.User;
 import ooo.oxo.moments.net.SignedBody;
 import retrofit.Callback;
 import retrofit.Response;
@@ -148,7 +149,7 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
             login.setVisibility(View.VISIBLE);
             sharedState.setAccount(null, null);
         } else {
-            startMainActivity();
+            startMainActivity(response.body().loggedInUser);
         }
     }
 
@@ -157,8 +158,9 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
         Toast.makeText(this, "网络错误", Toast.LENGTH_SHORT).show();
     }
 
-    private void startMainActivity() {
+    private void startMainActivity(User user) {
         Intent intent = new Intent(this, FeedActivity.class);
+        intent.putExtra("user", user);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 

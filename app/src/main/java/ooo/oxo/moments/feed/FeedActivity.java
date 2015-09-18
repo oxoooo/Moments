@@ -19,16 +19,17 @@
 package ooo.oxo.moments.feed;
 
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.view.GravityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
 
@@ -39,10 +40,16 @@ import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.ProxyActivity;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.FeedApi;
+import ooo.oxo.moments.databinding.FeedActivityBinding;
 import ooo.oxo.moments.model.Media;
+import ooo.oxo.moments.model.User;
 import ooo.oxo.moments.user.UserActivity;
+import ooo.oxo.moments.util.ImageViewBindingUtil;
 import ooo.oxo.moments.util.RxEndlessRecyclerView;
 import ooo.oxo.moments.util.StatusBarTintDelegate;
+import ooo.oxo.moments.util.StatusBarUtils;
+import pocketknife.BindExtra;
+import pocketknife.PocketKnife;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -53,47 +60,57 @@ public class FeedActivity extends AppCompatActivity implements
 
     private static final String TAG = "FeedActivity";
 
-    @Bind(R.id.appbar)
-    AppBarLayout appbar;
+    FeedActivityBinding binding;
 
-    @Bind(R.id.toolbar)
-    Toolbar toolbar;
+    @Bind(R.id.avatar)
+    ImageView avatar;
 
-    @Bind(R.id.refresher)
-    SwipeRefreshLayout refresher;
+    @Bind(R.id.user_name)
+    TextView userName;
 
-    @Bind(R.id.content)
-    RecyclerView content;
+    @Bind(R.id.full_name)
+    TextView fullName;
 
     @BindColor(R.color.primary)
     int colorPrimary;
+
+    @BindExtra("user")
+    User user;
 
     private FeedApi feedApi;
 
     private CompositeSubscription subscriptions = new CompositeSubscription();
 
-    private LinearLayoutManager layoutManager;
     private FeedAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.feed_activity);
+        binding = DataBindingUtil.setContentView(this, R.layout.feed_activity);
+
         ButterKnife.bind(this);
+        PocketKnife.bindExtras(this);
 
-        setSupportActionBar(toolbar);
+        setSupportActionBar(binding.toolbar);
 
-        appbar.addOnOffsetChangedListener(new StatusBarTintDelegate(this, colorPrimary));
+        // TODO: remove these 2
+        binding.appbar.addOnOffsetChangedListener(new StatusBarTintDelegate(this));
+        ((ViewGroup.MarginLayoutParams) binding.toolbar.getLayoutParams()).topMargin
+                = StatusBarUtils.getStatusBarHeight(this);
 
-        refresher.setColorSchemeColors(colorPrimary);
+        binding.toolbar.setNavigationOnClickListener(v -> binding.drawer.openDrawer(GravityCompat.START));
 
-        layoutManager = new LinearLayoutManager(this);
+        binding.refresher.setColorSchemeColors(colorPrimary);
+
+        ImageViewBindingUtil.loadRoundImage(avatar, user.profilePicUrl);
+        userName.setText(user.username);
+        fullName.setText(user.fullName);
 
         adapter = new FeedAdapter(this, this);
 
-        content.setLayoutManager(layoutManager);
-        content.setAdapter(adapter);
+        binding.content.setLayoutManager(new LinearLayoutManager(this));
+        binding.content.setAdapter(adapter);
 
         feedApi = InstaApplication.from(this).createApi(FeedApi.class);
 
@@ -113,7 +130,7 @@ public class FeedActivity extends AppCompatActivity implements
         observable = observable.cache();
 
         subscriptions.add(observable
-                .subscribe(envelope -> refresher.setRefreshing(false)));
+                .subscribe(envelope -> binding.refresher.setRefreshing(false)));
 
         subscriptions.add(observable
                 .filter(envelope -> envelope.items != null)
@@ -124,7 +141,7 @@ public class FeedActivity extends AppCompatActivity implements
         observable = observable.cache();
 
         subscriptions.add(observable
-                .subscribe(envelope -> refresher.setRefreshing(false)));
+                .subscribe(envelope -> binding.refresher.setRefreshing(false)));
 
         subscriptions.add(observable
                 .filter(envelope -> envelope.items != null)
@@ -132,20 +149,20 @@ public class FeedActivity extends AppCompatActivity implements
     }
 
     private void setupEndlessLoading() {
-        subscribeAppending(RxEndlessRecyclerView.reachesEnd(content)
+        subscribeAppending(RxEndlessRecyclerView.reachesEnd(binding.content)
                 .flatMap(position -> {
-                    refresher.setRefreshing(true);
+                    binding.refresher.setRefreshing(true);
                     return load(adapter.get(position).id);
                 }));
     }
 
     private void setupRefresh() {
-        subscribeRefreshing(RxSwipeRefreshLayout.refreshes(refresher)
+        subscribeRefreshing(RxSwipeRefreshLayout.refreshes(binding.refresher)
                 .flatMap(avoid -> load(null)));
     }
 
     private void load() {
-        refresher.post(() -> refresher.setRefreshing(true));
+        binding.refresher.post(() -> binding.refresher.setRefreshing(true));
         subscribeRefreshing(load(null));
     }
 

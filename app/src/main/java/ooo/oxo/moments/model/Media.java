@@ -18,8 +18,12 @@
 
 package ooo.oxo.moments.model;
 
+import android.support.annotation.IntDef;
+
 import com.google.gson.annotations.SerializedName;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Date;
 import java.util.List;
 
@@ -32,6 +36,7 @@ public class Media {
 
     public String id;
 
+    @MediaType
     public int mediaType;
 
     public int originalWidth;
@@ -61,9 +66,16 @@ public class Media {
     @SerializedName("image_versions2")
     public ImageCandidates imageVersions;
 
+    public List<Resource> videoVersions;
+
     @Override
     public boolean equals(Object o) {
         return this == o || ((o instanceof Media) && ((Media) o).id.equals(id));
+    }
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({TYPE_IMAGE, TYPE_VIDEO})
+    @interface MediaType {
     }
 
     public class ImageCandidates {
