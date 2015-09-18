@@ -39,7 +39,7 @@ public class RxEndlessRecyclerView {
                     }
                 })
                 .filter(i -> i >= view.getLayoutManager().getItemCount() - 1)
-                .distinct();
+                .distinctUntilChanged();
     }
 
 }
