@@ -156,6 +156,8 @@ public class UserActivity extends AppCompatActivity implements
 
         supportPostponeEnterTransition();
         ViewCompat.setTransitionName(binding.avatar, fromPostId + "_avatar");
+        ViewCompat.setTransitionName(binding.userName, fromPostId + "_user_name");
+        ViewCompat.setTransitionName(binding.fullName, fromPostId + "_full_name");
 
         streamLayoutManager = new LinearLayoutManager(this);
         streamAdapter = new FeedAdapter(this, this);
@@ -260,6 +262,7 @@ public class UserActivity extends AppCompatActivity implements
                 .load(profile.profilePicUrl)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .bitmapTransform(new CropCircleTransformation(this))
+                .crossFade(0)
                 .listener(this)
                 .into(binding.avatar);
     }

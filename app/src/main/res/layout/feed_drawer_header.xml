@@ -30,6 +30,7 @@
         android:layout_height="60dp"
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
+        android:transitionName="navigation_avatar"
         tools:ignore="ContentDescription"
         tools:src="#ccc" />
 
@@ -46,6 +47,7 @@
         android:textAllCaps="true"
         android:textColor="?android:textColorPrimary"
         android:textSize="24sp"
+        android:transitionName="navigation_user_name"
         tools:text="xingrz" />
 
     <TextView
@@ -59,6 +61,7 @@
         android:singleLine="true"
         android:textColor="?android:textColorSecondary"
         android:textSize="12sp"
+        android:transitionName="navigation_full_name"
         tools:text="Sing Yu Chan this name should be very long that single line" />
 
 </RelativeLayout>

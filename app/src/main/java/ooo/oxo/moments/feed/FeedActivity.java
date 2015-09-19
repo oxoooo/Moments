@@ -22,11 +22,13 @@ import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,6 +38,7 @@ import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
 import butterknife.Bind;
 import butterknife.BindColor;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.ProxyActivity;
 import ooo.oxo.moments.R;
@@ -227,6 +230,22 @@ public class FeedActivity extends AppCompatActivity implements
 
     @Override
     public void onComment(FeedAdapter.ViewHolder holder) {
+    }
+
+    @OnClick(R.id.avatar)
+    void onClickSelf(View v) {
+        Intent intent = new Intent(this, UserActivity.class);
+        intent.putExtra("user", user);
+        intent.putExtra("from_post", "navigation");
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        @SuppressWarnings("unchecked")
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this,
+                new Pair<>(avatar, "navigation_avatar"),
+                new Pair<>(userName, "navigation_user_name"),
+                new Pair<>(fullName, "navigation_full_name"));
+
+        startActivity(intent, options.toBundle());
     }
 
 }
