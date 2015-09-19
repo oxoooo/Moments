@@ -18,24 +18,10 @@
 
 package ooo.oxo.moments.net;
 
-import com.google.gson.Gson;
-import com.instagram.strings.StringBridge;
-
-import java.util.HashMap;
-
 public class SignedBody {
 
     public String _csrftoken;
     public String _uid;
     public String _uuid;
-
-    public static <T extends SignedBody> HashMap<String, String> build(Gson gson, T object, Class<T> type) {
-        String json = gson.toJson(object, type);
-        String signature = StringBridge.getSignatureString(json.getBytes());
-        HashMap<String, String> body = new HashMap<>();
-        body.put("ig_sig_key_version", "4");
-        body.put("signed_body", signature + "." + json);
-        return body;
-    }
 
 }

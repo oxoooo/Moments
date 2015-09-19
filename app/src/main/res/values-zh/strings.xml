@@ -18,6 +18,9 @@
 
 <resources>
 
+    <string name="hint_username">帐号</string>
+    <string name="hint_password">密码</string>
+
     <string name="login">登录</string>
 
     <string name="proxy">代理设置</string>

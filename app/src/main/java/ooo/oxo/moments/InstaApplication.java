@@ -21,11 +21,11 @@ package ooo.oxo.moments;
 import android.app.Application;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.text.TextUtils;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.instagram.strings.StringBridge;
 import com.squareup.okhttp.OkHttpClient;
 
 import java.net.CookieManager;
@@ -33,8 +33,10 @@ import java.net.CookiePolicy;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Date;
+import java.util.HashMap;
 
 import ooo.oxo.moments.net.LoggingInterceptor;
+import ooo.oxo.moments.net.SignedBody;
 import ooo.oxo.moments.net.TimestampTypeAdapter;
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
@@ -109,6 +111,15 @@ public class InstaApplication extends Application {
 
     public <T> T createApi(Class<T> service) {
         return retrofit.create(service);
+    }
+
+    public <T extends SignedBody> HashMap<String, String> sign(T object) {
+        String json = gson.toJson(object, object.getClass());
+        String signature = StringBridge.getSignatureString(json.getBytes());
+        HashMap<String, String> body = new HashMap<>();
+        body.put("ig_sig_key_version", "4");
+        body.put("signed_body", signature + "." + json);
+        return body;
     }
 
 }

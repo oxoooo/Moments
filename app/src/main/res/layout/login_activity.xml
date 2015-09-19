@@ -17,19 +17,29 @@
   -->
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context=".LoginActivity">
 
-    <include layout="@layout/toolbar" />
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:theme="@style/AppTheme.AppBarOverlay"
+        app:popupTheme="@style/AppTheme.PopupOverlay"
+        tools:layout_marginTop="24dp" />
 
     <ImageView
+        android:id="@+id/logo"
         android:layout_width="150dp"
         android:layout_height="150dp"
+        android:layout_below="@+id/toolbar"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp"
+        android:layout_margin="20dp"
         android:contentDescription="@string/app_name"
         android:src="@drawable/web_hi_res_512" />
 
@@ -37,43 +47,47 @@
         android:id="@+id/username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/password"
+        android:layout_below="@+id/logo"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="32dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
-        android:hint="帐号"
+        android:fontFamily="sans-serif-normal"
+        android:hint="@string/hint_username"
         android:inputType="text" />
 
     <EditText
         android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/login"
+        android:layout_below="@+id/username"
         android:layout_marginBottom="32dp"
         android:layout_marginEnd="32dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
-        android:hint="密码"
+        android:fontFamily="sans-serif-normal"
+        android:hint="@string/hint_password"
         android:inputType="textPassword" />
 
     <Button
         android:id="@+id/login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/password"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="100dp"
         android:background="?selectableItemBackgroundBorderless"
+        android:enabled="false"
         android:text="@string/login" />
 
     <ProgressBar
         android:id="@+id/progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_alignTop="@+id/login"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="100dp"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="visible" />
 
 </RelativeLayout>

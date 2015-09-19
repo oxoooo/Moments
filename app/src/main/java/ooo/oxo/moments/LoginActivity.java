@@ -30,7 +30,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.HashMap;
+import com.jakewharton.rxbinding.view.RxView;
+import com.jakewharton.rxbinding.widget.RxTextView;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -39,9 +40,10 @@ import ooo.oxo.moments.api.AccountApi;
 import ooo.oxo.moments.feed.FeedActivity;
 import ooo.oxo.moments.model.LoginForm;
 import ooo.oxo.moments.model.User;
-import ooo.oxo.moments.net.SignedBody;
 import retrofit.Callback;
 import retrofit.Response;
+import rx.Observable;
+import rx.subscriptions.CompositeSubscription;
 
 public class LoginActivity extends AppCompatActivity implements Callback<AccountApi.LoginEnvelope> {
 
@@ -62,6 +64,8 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
     @Bind(R.id.progress)
     View progress;
 
+    private CompositeSubscription subscriptions = new CompositeSubscription();
+
     private Handler handler = new Handler(Looper.getMainLooper());
 
     private InstaApplication application;
@@ -79,6 +83,17 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
 
         setSupportActionBar(toolbar);
         setTitle(null);
+
+        subscriptions.add(Observable
+                .merge(RxTextView.textChanges(username), RxTextView.textChanges(password))
+                .map(avoid -> username.getText().length() > 0 && password.getText().length() > 0)
+                .subscribe(RxView.enabled(login)));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        subscriptions.unsubscribe();
     }
 
     @Override
@@ -117,14 +132,15 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
         InstaSharedState.getInstance().setAccount(
                 username.getText().toString(),
                 password.getText().toString());
+
+        progress.setVisibility(View.VISIBLE);
         performLogin();
     }
 
     private void performLogin() {
-        username.setVisibility(View.GONE);
-        password.setVisibility(View.GONE);
-        login.setVisibility(View.GONE);
-        progress.setVisibility(View.VISIBLE);
+        username.setVisibility(View.INVISIBLE);
+        password.setVisibility(View.INVISIBLE);
+        login.setVisibility(View.INVISIBLE);
 
         LoginForm form = new LoginForm();
         form.username = sharedState.getUsername();
@@ -132,15 +148,12 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
         form.deviceId = sharedState.getDeviceId();
         form.guid = sharedState.getUuid();
 
-        HashMap<String, String> body = SignedBody.build(
-                application.getGson(), form, LoginForm.class);
-
-        application.createApi(AccountApi.class).login(body).enqueue(this);
+        application.createApi(AccountApi.class).login(application.sign(form)).enqueue(this);
     }
 
     @Override
     public void onResponse(Response<AccountApi.LoginEnvelope> response) {
-        progress.setVisibility(View.GONE);
+        progress.setVisibility(View.INVISIBLE);
 
         if (response.body() == null) {
             Toast.makeText(this, "登录失败", Toast.LENGTH_SHORT).show();
@@ -156,6 +169,10 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
     @Override
     public void onFailure(Throwable t) {
         Toast.makeText(this, "网络错误", Toast.LENGTH_SHORT).show();
+        progress.setVisibility(View.INVISIBLE);
+        username.setVisibility(View.VISIBLE);
+        password.setVisibility(View.VISIBLE);
+        login.setVisibility(View.VISIBLE);
     }
 
     private void startMainActivity(User user) {

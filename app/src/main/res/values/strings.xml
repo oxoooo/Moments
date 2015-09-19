@@ -20,6 +20,9 @@
 
     <string name="app_name" translatable="false">Moments</string>
 
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+
     <string name="login">Log In</string>
 
     <string name="proxy">Proxy settings</string>
