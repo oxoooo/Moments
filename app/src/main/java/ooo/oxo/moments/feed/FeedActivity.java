@@ -29,7 +29,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -49,8 +48,6 @@ import ooo.oxo.moments.model.User;
 import ooo.oxo.moments.user.UserActivity;
 import ooo.oxo.moments.util.ImageViewBindingUtil;
 import ooo.oxo.moments.util.RxEndlessRecyclerView;
-import ooo.oxo.moments.util.StatusBarTintDelegate;
-import ooo.oxo.moments.util.StatusBarUtils;
 import pocketknife.BindExtra;
 import pocketknife.PocketKnife;
 import rx.Observable;
@@ -97,10 +94,8 @@ public class FeedActivity extends AppCompatActivity implements
 
         setSupportActionBar(binding.toolbar);
 
-        // TODO: remove these 2
-        binding.appbar.addOnOffsetChangedListener(new StatusBarTintDelegate(this));
-        ((ViewGroup.MarginLayoutParams) binding.toolbar.getLayoutParams()).topMargin
-                = StatusBarUtils.getStatusBarHeight(this);
+        binding.appbar.addOnOffsetChangedListener((v, i) -> binding.statusBar.setAlpha(Math.min(
+                1, (float) -i / (float) (binding.appbar.getHeight() - binding.statusBar.getHeight()))));
 
         binding.toolbar.setNavigationOnClickListener(v -> binding.drawer.openDrawer(GravityCompat.START));
 
