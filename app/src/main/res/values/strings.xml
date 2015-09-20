@@ -32,6 +32,10 @@
     <string name="proxy_enabled">Enable</string>
     <string name="proxy_save">Save</string>
 
+    <string name="navigation_home">Home</string>
+    <string name="navigation_explore">Explore</string>
+    <string name="navigation_inbox">Inbox</string>
+
     <string name="n_likes">%d likes</string>
 
     <string name="like">Like</string>

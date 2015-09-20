@@ -19,48 +19,54 @@
 package ooo.oxo.moments.feed;
 
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
-
 import butterknife.Bind;
-import butterknife.BindColor;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.ProxyActivity;
 import ooo.oxo.moments.R;
-import ooo.oxo.moments.api.FeedApi;
-import ooo.oxo.moments.databinding.FeedActivityBinding;
-import ooo.oxo.moments.model.Media;
+import ooo.oxo.moments.explore.ExploreFragment;
 import ooo.oxo.moments.model.User;
 import ooo.oxo.moments.user.UserActivity;
+import ooo.oxo.moments.util.FuckingFragmentManager;
 import ooo.oxo.moments.util.ImageViewBindingUtil;
-import ooo.oxo.moments.util.RxEndlessRecyclerView;
 import pocketknife.BindExtra;
 import pocketknife.PocketKnife;
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
-public class FeedActivity extends AppCompatActivity implements
-        FeedAdapter.FeedListener {
+public class FeedActivity extends AppCompatActivity {
 
     private static final String TAG = "FeedActivity";
 
-    FeedActivityBinding binding;
+    @Bind(R.id.drawer)
+    DrawerLayout drawer;
+
+    @Bind(R.id.appbar)
+    AppBarLayout appbar;
+
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+
+    @Bind(R.id.status_bar)
+    View statusBar;
+
+    @Bind(R.id.navigation)
+    NavigationView navigation;
 
     @Bind(R.id.avatar)
     ImageView avatar;
@@ -71,51 +77,46 @@ public class FeedActivity extends AppCompatActivity implements
     @Bind(R.id.full_name)
     TextView fullName;
 
-    @BindColor(R.color.primary)
-    int colorPrimary;
-
     @BindExtra("user")
     User user;
 
-    private FeedApi feedApi;
-
     private CompositeSubscription subscriptions = new CompositeSubscription();
 
-    private FeedAdapter adapter;
+    private FuckingFragmentManager fragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = DataBindingUtil.setContentView(this, R.layout.feed_activity);
+        setContentView(R.layout.feed_activity);
 
         ButterKnife.bind(this);
         PocketKnife.bindExtras(this);
 
-        setSupportActionBar(binding.toolbar);
+        setSupportActionBar(toolbar);
 
-        binding.appbar.addOnOffsetChangedListener((v, i) -> binding.statusBar.setAlpha(Math.min(
-                1, (float) -i / (float) (binding.appbar.getHeight() - binding.statusBar.getHeight()))));
+        appbar.addOnOffsetChangedListener((v, i) -> statusBar.setAlpha(Math.min(
+                1, (float) -i / (float) (appbar.getHeight() - statusBar.getHeight()))));
 
-        binding.toolbar.setNavigationOnClickListener(v -> binding.drawer.openDrawer(GravityCompat.START));
-
-        binding.refresher.setColorSchemeColors(colorPrimary);
+        toolbar.setNavigationOnClickListener(v -> drawer.openDrawer(GravityCompat.START));
 
         ImageViewBindingUtil.loadRoundImage(avatar, user.profilePicUrl);
         userName.setText(user.username);
         fullName.setText(user.fullName);
 
-        adapter = new FeedAdapter(this, this);
+        fragmentManager = new FuckingFragmentManager(this, R.id.container);
 
-        binding.content.setLayoutManager(new LinearLayoutManager(this));
-        binding.content.setAdapter(adapter);
+        switchFragment(R.id.home);
 
-        feedApi = InstaApplication.from(this).createApi(FeedApi.class);
-
-        setupEndlessLoading();
-        setupRefresh();
-
-        load();
+        navigation.setCheckedItem(R.id.home);
+        navigation.setNavigationItemSelectedListener(menuItem -> {
+            if (switchFragment(menuItem.getItemId())) {
+                drawer.closeDrawers();
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 
     @Override
@@ -124,51 +125,17 @@ public class FeedActivity extends AppCompatActivity implements
         subscriptions.unsubscribe();
     }
 
-    private void subscribeAppending(Observable<FeedApi.FeedEnvelope> observable) {
-        observable = observable.cache();
-
-        subscriptions.add(observable
-                .subscribe(envelope -> binding.refresher.setRefreshing(false)));
-
-        subscriptions.add(observable
-                .filter(envelope -> envelope.items != null)
-                .subscribe(envelope -> adapter.addAll(envelope.items)));
-    }
-
-    private void subscribeRefreshing(Observable<FeedApi.FeedEnvelope> observable) {
-        observable = observable.cache();
-
-        subscriptions.add(observable
-                .subscribe(envelope -> binding.refresher.setRefreshing(false)));
-
-        subscriptions.add(observable
-                .filter(envelope -> envelope.items != null)
-                .subscribe(envelope -> adapter.replaceWith(envelope.items)));
-    }
-
-    private void setupEndlessLoading() {
-        subscribeAppending(RxEndlessRecyclerView.reachesEnd(binding.content)
-                .flatMap(position -> {
-                    binding.refresher.setRefreshing(true);
-                    return load(adapter.get(position).id);
-                }));
-    }
-
-    private void setupRefresh() {
-        subscribeRefreshing(RxSwipeRefreshLayout.refreshes(binding.refresher)
-                .flatMap(avoid -> load(null)));
-    }
-
-    private void load() {
-        binding.refresher.post(() -> binding.refresher.setRefreshing(true));
-        subscribeRefreshing(load(null));
-    }
-
-    private Observable<FeedApi.FeedEnvelope> load(String maxId) {
-        return feedApi.timeline(maxId)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .cache();
+    private boolean switchFragment(@IdRes int id) {
+        switch (id) {
+            case R.id.home:
+                fragmentManager.switchTo(FeedFragment.class);
+                return true;
+            case R.id.explore:
+                fragmentManager.switchTo(ExploreFragment.class);
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
@@ -186,45 +153,6 @@ public class FeedActivity extends AppCompatActivity implements
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    public void onUserClick(FeedAdapter.ViewHolder holder) {
-        Media item = adapter.get(holder.getAdapterPosition());
-
-        Intent intent = new Intent(this, UserActivity.class);
-        intent.putExtra("user", item.user);
-        intent.putExtra("from_post", item.id);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                this, holder.binding.avatar, item.id + "_avatar");
-
-        startActivity(intent, options.toBundle());
-    }
-
-    @Override
-    public void onUserClick(long id) {
-        Intent intent = new Intent(this, UserActivity.class);
-        intent.putExtra("id", id);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-    }
-
-    @Override
-    public void onImageClick(FeedAdapter.ViewHolder holder) {
-    }
-
-    @Override
-    public void onLikesClick(FeedAdapter.ViewHolder holder) {
-    }
-
-    @Override
-    public void onLike(FeedAdapter.ViewHolder holder) {
-    }
-
-    @Override
-    public void onComment(FeedAdapter.ViewHolder holder) {
     }
 
     @OnClick(R.id.avatar)

@@ -30,6 +30,10 @@
     <string name="proxy_enabled">启用</string>
     <string name="proxy_save">保存设置</string>
 
+    <string name="navigation_home">主页</string>
+    <string name="navigation_explore">发现</string>
+    <string name="navigation_inbox">消息</string>
+
     <string name="n_likes">%d 个赞</string>
 
     <string name="like">赞</string>
