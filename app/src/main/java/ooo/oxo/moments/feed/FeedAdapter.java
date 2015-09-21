@@ -26,9 +26,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ooo.oxo.moments.R;
@@ -39,8 +36,6 @@ import ooo.oxo.moments.text.CommentTextUtils;
 import ooo.oxo.moments.widget.ArrayRecyclerAdapter;
 
 public class FeedAdapter extends ArrayRecyclerAdapter<Media, FeedAdapter.ViewHolder> {
-
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
 
     private final LayoutInflater inflater;
     private final FeedListener listener;
@@ -61,7 +56,6 @@ public class FeedAdapter extends ArrayRecyclerAdapter<Media, FeedAdapter.ViewHol
 
         holder.binding.setItem(item);
 
-        holder.binding.time.setText(DATE_FORMAT.format(item.takenAt));
         holder.binding.image.setOriginalSize(item.originalWidth, item.originalHeight);
 
         holder.binding.comments.removeAllViews();
