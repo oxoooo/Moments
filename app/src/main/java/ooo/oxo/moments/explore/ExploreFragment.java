@@ -20,10 +20,12 @@ package ooo.oxo.moments.explore;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +35,7 @@ import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
+import ooo.oxo.moments.MainActivity;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.feed.FeedAdapter;
@@ -47,6 +50,15 @@ public class ExploreFragment extends Fragment implements
         UserGridAdapter.GridListener {
 
     private static final String TAG = "ExploreFragment";
+
+    @Bind(R.id.appbar)
+    AppBarLayout appbar;
+
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+
+    @Bind(R.id.status_bar)
+    View statusBar;
 
     @Bind(R.id.refresher)
     SwipeRefreshLayout refresher;
@@ -76,6 +88,11 @@ public class ExploreFragment extends Fragment implements
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         ButterKnife.bind(this, view);
+
+        appbar.addOnOffsetChangedListener((v, i) -> statusBar.setAlpha(Math.min(
+                1, (float) -i / (float) (appbar.getHeight() - statusBar.getHeight()))));
+
+        toolbar.setNavigationOnClickListener(v -> ((MainActivity) getActivity()).openNavigation());
 
         refresher.setColorSchemeResources(R.color.primary);
 

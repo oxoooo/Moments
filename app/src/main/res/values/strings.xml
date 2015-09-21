@@ -48,4 +48,7 @@
     <string name="profile_followers">Followers</string>
     <string name="profile_following">Following</string>
 
+    <string name="inbox_news">News</string>
+    <string name="inbox_mine">Mine</string>
+
 </resources>

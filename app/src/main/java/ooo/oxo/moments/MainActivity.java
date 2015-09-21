@@ -21,14 +21,12 @@ package ooo.oxo.moments;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -53,15 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Bind(R.id.drawer)
     DrawerLayout drawer;
-
-    @Bind(R.id.appbar)
-    AppBarLayout appbar;
-
-    @Bind(R.id.toolbar)
-    Toolbar toolbar;
-
-    @Bind(R.id.status_bar)
-    View statusBar;
 
     @Bind(R.id.navigation)
     NavigationView navigation;
@@ -91,13 +80,6 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         PocketKnife.bindExtras(this);
 
-        setSupportActionBar(toolbar);
-
-        appbar.addOnOffsetChangedListener((v, i) -> statusBar.setAlpha(Math.min(
-                1, (float) -i / (float) (appbar.getHeight() - statusBar.getHeight()))));
-
-        toolbar.setNavigationOnClickListener(v -> drawer.openDrawer(GravityCompat.START));
-
         ImageViewBindingUtil.loadRoundImage(avatar, user.profilePicUrl);
         userName.setText(user.username);
         fullName.setText(user.fullName);
@@ -121,6 +103,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         subscriptions.unsubscribe();
+    }
+
+    public void openNavigation() {
+        drawer.openDrawer(GravityCompat.START);
     }
 
     private boolean switchFragment(@IdRes int id) {

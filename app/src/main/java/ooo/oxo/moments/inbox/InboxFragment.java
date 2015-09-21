@@ -24,15 +24,20 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import ooo.oxo.moments.MainActivity;
 import ooo.oxo.moments.R;
 
 public class InboxFragment extends Fragment {
+
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
 
     @Bind(R.id.tabs)
     TabLayout tabs;
@@ -49,7 +54,11 @@ public class InboxFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         ButterKnife.bind(this, view);
+
+        toolbar.setNavigationOnClickListener(v -> ((MainActivity) getActivity()).openNavigation());
+
         pager.setAdapter(new Adapter());
+
         tabs.setupWithViewPager(pager);
     }
 
@@ -75,9 +84,9 @@ public class InboxFragment extends Fragment {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "好友";
+                    return getString(R.string.inbox_news);
                 case 1:
-                    return "我";
+                    return getString(R.string.inbox_mine);
                 default:
                     return null;
             }
