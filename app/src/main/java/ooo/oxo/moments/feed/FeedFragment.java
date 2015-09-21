@@ -140,8 +140,7 @@ public class FeedFragment extends Fragment implements
     private Observable<FeedApi.FeedEnvelope> load(String maxId) {
         return feedApi.timeline(maxId)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .cache();
+                .subscribeOn(Schedulers.io());
     }
 
     @Override

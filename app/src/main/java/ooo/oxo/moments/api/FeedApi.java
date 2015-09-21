@@ -33,7 +33,7 @@ public interface FeedApi {
     Observable<FeedEnvelope> timeline(@Query("max_id") String maxId);
 
     @GET("v1/feed/popular/")
-    Call popular(@Query("max_id") String maxId);
+    Observable<FeedEnvelope> popular(@Query("max_id") String maxId);
 
     @GET("v1/feed/user/{id}/")
     Observable<FeedEnvelope> ofUser(@Path("id") long id, @Query("max_id") String maxId);
