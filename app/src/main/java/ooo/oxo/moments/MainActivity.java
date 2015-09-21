@@ -38,6 +38,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ooo.oxo.moments.explore.ExploreFragment;
 import ooo.oxo.moments.feed.FeedFragment;
+import ooo.oxo.moments.inbox.InboxFragment;
 import ooo.oxo.moments.model.User;
 import ooo.oxo.moments.user.UserActivity;
 import ooo.oxo.moments.util.FuckingFragmentManager;
@@ -129,6 +130,9 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.explore:
                 fragmentManager.switchTo(ExploreFragment.class);
+                return true;
+            case R.id.inbox:
+                fragmentManager.switchTo(InboxFragment.class);
                 return true;
             case R.id.proxy:
                 startActivity(new Intent(this, ProxyActivity.class));

@@ -16,35 +16,51 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.net;
+package ooo.oxo.moments.model;
 
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
-
-import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
-public class TimestampTypeAdapter extends TypeAdapter<Date> {
+public class Story {
 
-    @Override
-    public void write(JsonWriter out, Date value) throws IOException {
-        if (value == null) {
-            out.nullValue();
-        } else {
-            out.value(value.getTime() / 1000l);
+    public int type;
+
+    public Args args;
+
+    public class Args {
+
+        public String text;
+
+        public long profileId;
+
+        public String profileImage;
+
+        public List<Link> links;
+
+        public List<Media> media;
+
+        public Date timestamp;
+
+        public class Link {
+
+            public int start;
+
+            public int end;
+
+            public String id;
+
+            public String type;
+
         }
-    }
 
-    @Override
-    public Date read(JsonReader in) throws IOException {
-        if (in.peek() == JsonToken.NULL) {
-            in.nextNull();
-            return null;
-        } else {
-            return new Date((long) (in.nextDouble() * 1000l));
+        public class Media {
+
+            public String id;
+
+            public String image;
+
         }
+
     }
 
 }

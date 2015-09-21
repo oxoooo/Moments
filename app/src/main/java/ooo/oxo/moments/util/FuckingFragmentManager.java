@@ -18,6 +18,7 @@
 
 package ooo.oxo.moments.util;
 
+import android.content.Context;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -30,7 +31,7 @@ public class FuckingFragmentManager {
 
     private final HashMap<String, Fragment> fragments = new HashMap<>();
 
-    private final FragmentActivity activity;
+    private final Context context;
     private final FragmentManager fragmentManager;
 
     private final int container;
@@ -38,8 +39,12 @@ public class FuckingFragmentManager {
     private String current;
 
     public FuckingFragmentManager(FragmentActivity activity, @IdRes int container) {
-        this.activity = activity;
-        this.fragmentManager = activity.getSupportFragmentManager();
+        this(activity, activity.getSupportFragmentManager(), container);
+    }
+
+    public FuckingFragmentManager(Context context, FragmentManager fragmentManager, @IdRes int container) {
+        this.context = context;
+        this.fragmentManager = fragmentManager;
         this.container = container;
     }
 
@@ -51,7 +56,7 @@ public class FuckingFragmentManager {
         }
 
         if (fragmentManager.findFragmentByTag(name) == null) {
-            Fragment instance = Fragment.instantiate(activity, name);
+            Fragment instance = Fragment.instantiate(context, name);
             fragments.put(name, instance);
             fragmentManager.beginTransaction().add(container, instance, name).commit();
         } else {

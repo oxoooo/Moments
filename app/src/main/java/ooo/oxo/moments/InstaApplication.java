@@ -34,6 +34,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 import ooo.oxo.moments.net.LoggingInterceptor;
 import ooo.oxo.moments.net.SignedBody;
@@ -56,6 +57,12 @@ public class InstaApplication extends Application {
         return (InstaApplication) context.getApplicationContext();
     }
 
+    private static String makeAcceptLanguage() {
+        Locale locale = Locale.getDefault();
+        return String.format("%s-%s,%s;q=0.8,en-US;q=0.6,en;q=0.4",
+                locale.getLanguage(), locale.getCountry(), locale.getLanguage());
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -69,8 +76,10 @@ public class InstaApplication extends Application {
 
         httpClient.setCookieHandler(cookieManager);
 
-        httpClient.networkInterceptors().add(chain -> chain.proceed(chain.request()
-                .newBuilder().header("User-Agent", "Instagram 7.6.0 Android").build()));
+        httpClient.networkInterceptors().add(chain -> chain.proceed(chain.request().newBuilder()
+                .header("Accept-Language", makeAcceptLanguage())
+                .header("User-Agent", "Instagram 7.6.0 Android")
+                .build()));
 
         httpClient.networkInterceptors().add(new LoggingInterceptor());
 
