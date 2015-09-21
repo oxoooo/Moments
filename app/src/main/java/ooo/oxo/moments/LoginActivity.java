@@ -37,7 +37,6 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ooo.oxo.moments.api.AccountApi;
-import ooo.oxo.moments.feed.FeedActivity;
 import ooo.oxo.moments.model.LoginForm;
 import ooo.oxo.moments.model.User;
 import retrofit.Callback;
@@ -176,7 +175,7 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
     }
 
     private void startMainActivity(User user) {
-        Intent intent = new Intent(this, FeedActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("user", user);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

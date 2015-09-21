@@ -16,7 +16,7 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.feed;
+package ooo.oxo.moments;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,8 +29,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -38,9 +36,8 @@ import android.widget.TextView;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import ooo.oxo.moments.ProxyActivity;
-import ooo.oxo.moments.R;
 import ooo.oxo.moments.explore.ExploreFragment;
+import ooo.oxo.moments.feed.FeedFragment;
 import ooo.oxo.moments.model.User;
 import ooo.oxo.moments.user.UserActivity;
 import ooo.oxo.moments.util.FuckingFragmentManager;
@@ -49,9 +46,9 @@ import pocketknife.BindExtra;
 import pocketknife.PocketKnife;
 import rx.subscriptions.CompositeSubscription;
 
-public class FeedActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "FeedActivity";
+    private static final String TAG = "MainActivity";
 
     @Bind(R.id.drawer)
     DrawerLayout drawer;
@@ -88,7 +85,7 @@ public class FeedActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.feed_activity);
+        setContentView(R.layout.main_activity);
 
         ButterKnife.bind(this);
         PocketKnife.bindExtras(this);
@@ -133,25 +130,11 @@ public class FeedActivity extends AppCompatActivity {
             case R.id.explore:
                 fragmentManager.switchTo(ExploreFragment.class);
                 return true;
-            default:
-                return false;
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.login, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
             case R.id.proxy:
                 startActivity(new Intent(this, ProxyActivity.class));
                 return true;
             default:
-                return super.onOptionsItemSelected(item);
+                return false;
         }
     }
 

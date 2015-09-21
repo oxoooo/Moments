@@ -62,7 +62,7 @@
             android:label="@string/proxy"
             android:theme="@style/LoginTheme" />
 
-        <activity android:name=".feed.FeedActivity" />
+        <activity android:name=".MainActivity" />
 
         <activity android:name=".user.UserActivity" />
 

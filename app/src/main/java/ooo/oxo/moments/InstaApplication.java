@@ -44,6 +44,8 @@ import retrofit.RxJavaCallAdapterFactory;
 
 public class InstaApplication extends Application {
 
+    private final HashMap<Class, Object> apis = new HashMap<>();
+
     private OkHttpClient httpClient;
 
     private Gson gson;
@@ -87,10 +89,6 @@ public class InstaApplication extends Application {
                 .build();
     }
 
-    public Gson getGson() {
-        return gson;
-    }
-
     public OkHttpClient getHttpClient() {
         return httpClient;
     }
@@ -110,7 +108,13 @@ public class InstaApplication extends Application {
     }
 
     public <T> T createApi(Class<T> service) {
-        return retrofit.create(service);
+        if (!apis.containsKey(service)) {
+            T instance = retrofit.create(service);
+            apis.put(service, instance);
+        }
+
+        //noinspection unchecked
+        return (T) apis.get(service);
     }
 
     public <T extends SignedBody> HashMap<String, String> sign(T object) {
