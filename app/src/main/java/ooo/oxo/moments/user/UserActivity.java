@@ -23,7 +23,6 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
@@ -46,6 +45,7 @@ import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.api.UserApi;
+import ooo.oxo.moments.app.RxActivity;
 import ooo.oxo.moments.databinding.UserActivityBinding;
 import ooo.oxo.moments.feed.FeedAdapter;
 import ooo.oxo.moments.model.Media;
@@ -59,9 +59,8 @@ import pocketknife.PocketKnife;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-import rx.subscriptions.CompositeSubscription;
 
-public class UserActivity extends AppCompatActivity implements
+public class UserActivity extends RxActivity implements
         UserGridAdapter.GridListener,
         RequestListener<String, GlideDrawable> {
 
@@ -97,8 +96,6 @@ public class UserActivity extends AppCompatActivity implements
     String fromPostId;
 
     private UserActivityBinding binding;
-
-    private CompositeSubscription subscriptions = new CompositeSubscription();
 
     private MenuItem viewAsGrid;
     private MenuItem viewAsStream;
@@ -173,12 +170,6 @@ public class UserActivity extends AppCompatActivity implements
         load();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        subscriptions.unsubscribe();
-    }
-
     private String getId(int position) {
         if (binding.content.getLayoutManager() == streamLayoutManager) {
             return streamAdapter.get(position).id;
@@ -205,23 +196,19 @@ public class UserActivity extends AppCompatActivity implements
     private void subscribeAppending(Observable<FeedApi.FeedEnvelope> observable) {
         observable = observable.cache();
 
-        subscriptions.add(observable
-                .subscribe(envelope -> binding.refresher.setRefreshing(false)));
+        subscribe(observable, envelope -> binding.refresher.setRefreshing(false));
 
-        subscriptions.add(observable
-                .filter(envelope -> envelope.items != null)
-                .subscribe(envelope -> addAll(envelope.items)));
+        subscribe(observable.filter(envelope -> envelope.items != null),
+                envelope -> addAll(envelope.items));
     }
 
     private void subscribeRefreshing(Observable<FeedApi.FeedEnvelope> observable) {
         observable = observable.cache();
 
-        subscriptions.add(observable
-                .subscribe(envelope -> binding.refresher.setRefreshing(false)));
+        subscribe(observable, envelope -> binding.refresher.setRefreshing(false));
 
-        subscriptions.add(observable
-                .filter(envelope -> envelope.items != null)
-                .subscribe(envelope -> replaceWith(envelope.items)));
+        subscribe(observable.filter(envelope -> envelope.items != null),
+                envelope -> replaceWith(envelope.items));
     }
 
     private void setupEndlessLoading() {

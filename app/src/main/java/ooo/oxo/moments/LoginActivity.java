@@ -22,7 +22,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,14 +36,14 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ooo.oxo.moments.api.AccountApi;
+import ooo.oxo.moments.app.RxActivity;
 import ooo.oxo.moments.model.LoginForm;
 import ooo.oxo.moments.model.User;
 import retrofit.Callback;
 import retrofit.Response;
 import rx.Observable;
-import rx.subscriptions.CompositeSubscription;
 
-public class LoginActivity extends AppCompatActivity implements Callback<AccountApi.LoginEnvelope> {
+public class LoginActivity extends RxActivity implements Callback<AccountApi.LoginEnvelope> {
 
     private static final String TAG = "LoginActivity";
 
@@ -62,8 +61,6 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
 
     @Bind(R.id.progress)
     View progress;
-
-    private CompositeSubscription subscriptions = new CompositeSubscription();
 
     private Handler handler = new Handler(Looper.getMainLooper());
 
@@ -83,16 +80,10 @@ public class LoginActivity extends AppCompatActivity implements Callback<Account
         setSupportActionBar(toolbar);
         setTitle(null);
 
-        subscriptions.add(Observable
-                .merge(RxTextView.textChanges(username), RxTextView.textChanges(password))
-                .map(avoid -> username.getText().length() > 0 && password.getText().length() > 0)
-                .subscribe(RxView.enabled(login)));
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        subscriptions.unsubscribe();
+        subscribe(Observable
+                        .merge(RxTextView.textChanges(username), RxTextView.textChanges(password))
+                        .map(avoid -> username.getText().length() > 0 && password.getText().length() > 0),
+                RxView.enabled(login));
     }
 
     @Override

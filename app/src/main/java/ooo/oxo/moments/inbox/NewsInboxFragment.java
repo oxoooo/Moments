@@ -20,7 +20,6 @@ package ooo.oxo.moments.inbox;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -33,19 +32,17 @@ import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.NewsApi;
+import ooo.oxo.moments.app.RxFragment;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-import rx.subscriptions.CompositeSubscription;
 
-public class NewsInboxFragment extends Fragment {
+public class NewsInboxFragment extends RxFragment {
 
     @Bind(R.id.refresher)
     SwipeRefreshLayout refresher;
 
     @Bind(R.id.content)
     RecyclerView content;
-
-    private CompositeSubscription subscriptions = new CompositeSubscription();
 
     private NewsApi newsApi;
 
@@ -73,18 +70,15 @@ public class NewsInboxFragment extends Fragment {
         content.setLayoutManager(new LinearLayoutManager(getContext()));
         content.setAdapter(adapter);
 
-        subscriptions.add(newsApi.news()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(envelope -> {
-                    adapter.replaceWith(envelope.stories);
-                }));
+        subscribe(newsApi.news()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(Schedulers.io()),
+                envelope -> adapter.replaceWith(envelope.stories));
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        subscriptions.unsubscribe();
         adapter.clear();
     }
 

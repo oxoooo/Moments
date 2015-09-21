@@ -21,7 +21,6 @@ package ooo.oxo.moments.explore;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,15 +37,15 @@ import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.MainActivity;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.FeedApi;
+import ooo.oxo.moments.app.RxFragment;
 import ooo.oxo.moments.feed.FeedAdapter;
 import ooo.oxo.moments.user.UserGridAdapter;
 import ooo.oxo.moments.util.RxEndlessRecyclerView;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-import rx.subscriptions.CompositeSubscription;
 
-public class ExploreFragment extends Fragment implements
+public class ExploreFragment extends RxFragment implements
         UserGridAdapter.GridListener {
 
     private static final String TAG = "ExploreFragment";
@@ -67,8 +66,6 @@ public class ExploreFragment extends Fragment implements
     RecyclerView content;
 
     private FeedApi feedApi;
-
-    private CompositeSubscription subscriptions = new CompositeSubscription();
 
     private UserGridAdapter adapter;
 
@@ -108,30 +105,25 @@ public class ExploreFragment extends Fragment implements
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        subscriptions.unsubscribe();
         adapter.clear();
     }
 
     private void subscribeAppending(Observable<FeedApi.FeedEnvelope> observable) {
         observable = observable.cache();
 
-        subscriptions.add(observable
-                .subscribe(envelope -> refresher.setRefreshing(false)));
+        subscribe(observable, envelope -> refresher.setRefreshing(false));
 
-        subscriptions.add(observable
-                .filter(envelope -> envelope.items != null)
-                .subscribe(envelope -> adapter.addAll(envelope.items)));
+        subscribe(observable.filter(envelope -> envelope.items != null),
+                envelope -> adapter.addAll(envelope.items));
     }
 
     private void subscribeRefreshing(Observable<FeedApi.FeedEnvelope> observable) {
         observable = observable.cache();
 
-        subscriptions.add(observable
-                .subscribe(envelope -> refresher.setRefreshing(false)));
+        subscribe(observable, envelope -> refresher.setRefreshing(false));
 
-        subscriptions.add(observable
-                .filter(envelope -> envelope.items != null)
-                .subscribe(envelope -> adapter.replaceWith(envelope.items)));
+        subscribe(observable.filter(envelope -> envelope.items != null),
+                envelope -> adapter.replaceWith(envelope.items));
     }
 
     private void setupEndlessLoading() {
