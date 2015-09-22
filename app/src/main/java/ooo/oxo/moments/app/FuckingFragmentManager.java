@@ -16,7 +16,7 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.util;
+package ooo.oxo.moments.app;
 
 import android.content.Context;
 import android.support.annotation.IdRes;

@@ -39,10 +39,10 @@ import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.MainActivity;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.FeedApi;
-import ooo.oxo.moments.app.RxFragment;
+import ooo.oxo.moments.rx.RxFragment;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.user.UserActivity;
-import ooo.oxo.moments.util.RxEndlessRecyclerView;
+import ooo.oxo.moments.rx.RxEndlessRecyclerView;
 import rx.Observable;
 
 public class FeedFragment extends RxFragment implements

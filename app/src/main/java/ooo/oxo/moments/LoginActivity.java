@@ -36,7 +36,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ooo.oxo.moments.api.AccountApi;
-import ooo.oxo.moments.app.RxActivity;
+import ooo.oxo.moments.rx.RxActivity;
 import ooo.oxo.moments.model.LoginForm;
 import ooo.oxo.moments.model.User;
 import retrofit.Callback;

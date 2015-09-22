@@ -33,7 +33,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.model.Story;
-import ooo.oxo.moments.util.ImageViewBindingUtil;
+import ooo.oxo.moments.binding.ImageViewBindingUtil;
 import ooo.oxo.moments.widget.ArrayRecyclerAdapter;
 
 public class NewsInboxAdapter extends ArrayRecyclerAdapter<Story, NewsInboxAdapter.ViewHolder> {

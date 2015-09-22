@@ -16,30 +16,19 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.util;
+package ooo.oxo.moments.binding;
 
-import android.view.View;
-import android.view.ViewGroup;
+import android.databinding.BindingAdapter;
+import android.text.format.DateUtils;
+import android.widget.TextView;
 
-public class ViewGroupUtils {
+import java.util.Date;
 
-    public static int[] calculateBounds(View view, ViewGroup container) {
-        int[] result = new int[]{0, 0, 0, 0};
+public class TextViewBindingUtil {
 
-        View parent = view;
-        do {
-            if (!(parent.getParent() instanceof ViewGroup)) {
-                break;
-            }
-            result[0] += parent.getLeft();
-            result[1] += parent.getTop();
-            result[2] += parent.getRight();
-            result[3] += parent.getBottom();
-
-            parent = (View) parent.getParent();
-        } while (parent != container);
-
-        return result;
+    @BindingAdapter("bind:relativeDateTime")
+    public static void setRelativeDateTime(TextView view, Date date) {
+        view.setText(DateUtils.getRelativeTimeSpanString(view.getContext(), date.getTime()));
     }
 
 }

@@ -32,7 +32,7 @@ import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.NewsApi;
-import ooo.oxo.moments.app.RxFragment;
+import ooo.oxo.moments.rx.RxFragment;
 
 public class MyInboxFragment extends RxFragment {
 

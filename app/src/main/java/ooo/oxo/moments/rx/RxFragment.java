@@ -16,9 +16,9 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.app;
+package ooo.oxo.moments.rx;
 
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -26,9 +26,10 @@ import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
-public class RxActivity extends AppCompatActivity {
+public class RxFragment extends Fragment {
 
     private final CompositeSubscription subscriptions = new CompositeSubscription();
+
 
     protected <T> void subscribe(Observable<T> observable,
                                  Action1<T> onNext) {
@@ -55,8 +56,8 @@ public class RxActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
         subscriptions.unsubscribe();
     }
 
