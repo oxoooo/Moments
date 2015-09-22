@@ -20,11 +20,10 @@ package ooo.oxo.moments.feed;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.text.method.LinkMovementMethod;
+import android.text.SpannableStringBuilder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -54,41 +53,30 @@ public class FeedAdapter extends ArrayRecyclerAdapter<Media, FeedAdapter.ViewHol
     public void onBindViewHolder(ViewHolder holder, int position) {
         Media item = get(position);
 
-        holder.binding.setItem(item);
-
-        holder.binding.image.setOriginalSize(item.originalWidth, item.originalHeight);
-
-        holder.binding.comments.removeAllViews();
-        holder.binding.comments.setVisibility(
-                item.caption != null || item.commentCount > 0 ? View.VISIBLE : View.GONE);
+        // TODO: consider caching for smoother scrolling
+        SpannableStringBuilder comments = new SpannableStringBuilder();
 
         if (item.caption != null) {
-            TextView caption = (TextView) inflater.inflate(
-                    R.layout.feed_comment_item, holder.binding.comments, false);
-
-            CharSequence text = CommentTextUtils.format(
-                    item.user.username, item.caption.text, item.tags,
-                    () -> listener.onUserClick(item.user.pk), null);
-
-            caption.setText(text, TextView.BufferType.SPANNABLE);
-            caption.setMovementMethod(LinkMovementMethod.getInstance());
-
-            holder.binding.comments.addView(caption);
+            comments.append(CommentTextUtils.format(item.user.username, item.caption.text, item.tags,
+                    () -> listener.onUserClick(item.user.pk), null));
         }
 
         for (Comment comment : item.comments) {
-            TextView child = (TextView) inflater.inflate(
-                    R.layout.feed_comment_item, holder.binding.comments, false);
+            CharSequence text = new SpannableStringBuilder(
+                    CommentTextUtils.format(comment.user.username, comment.text,
+                            () -> listener.onUserClick(comment.user.pk)));
 
-            CharSequence text = CommentTextUtils.format(
-                    comment.user.username, comment.text,
-                    () -> listener.onUserClick(comment.user.pk));
+            if (comments.length() > 0) {
+                comments.append("\n");
+            }
 
-            child.setText(text, TextView.BufferType.SPANNABLE);
-            child.setMovementMethod(LinkMovementMethod.getInstance());
-
-            holder.binding.comments.addView(child);
+            comments.append(text);
         }
+
+        holder.binding.setItem(item);
+        holder.binding.setComments(comments);
+
+        holder.binding.image.setOriginalSize(item.originalWidth, item.originalHeight);
     }
 
     public interface FeedListener {

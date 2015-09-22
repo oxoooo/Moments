@@ -20,6 +20,7 @@ package ooo.oxo.moments.binding;
 
 import android.databinding.BindingAdapter;
 import android.text.format.DateUtils;
+import android.text.method.LinkMovementMethod;
 import android.widget.TextView;
 
 import java.util.Date;
@@ -29,6 +30,12 @@ public class TextViewBindingUtil {
     @BindingAdapter("bind:relativeDateTime")
     public static void setRelativeDateTime(TextView view, Date date) {
         view.setText(DateUtils.getRelativeTimeSpanString(view.getContext(), date.getTime()));
+    }
+
+    @BindingAdapter("bind:spannable")
+    public static void setSpannable(TextView view, CharSequence text) {
+        view.setText(text, TextView.BufferType.SPANNABLE);
+        view.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
 }

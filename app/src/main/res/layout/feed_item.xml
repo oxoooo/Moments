@@ -28,6 +28,10 @@
             name="item"
             type="ooo.oxo.moments.model.Media" />
 
+        <variable
+            name="comments"
+            type="CharSequence" />
+
     </data>
 
     <android.support.v7.widget.CardView
@@ -151,19 +155,21 @@
                 android:visibility="@{item.likeCount > 0 ? View.VISIBLE : View.GONE}"
                 tools:text="@string/n_likes" />
 
-            <LinearLayout
+            <TextView
                 android:id="@+id/comments"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/like"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginStart="16dp"
-                android:orientation="vertical"
+                android:lineSpacingMultiplier="1.2"
+                android:visibility="@{comments.length() > 0 ? View.VISIBLE : View.GONE}"
+                app:spannable="@{comments}"
                 tools:background="#eee"
                 tools:layout_height="100dp">
 
-            </LinearLayout>
+            </TextView>
 
         </RelativeLayout>
 
