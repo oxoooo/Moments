@@ -37,7 +37,6 @@ import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
 
 import java.util.List;
 
-import butterknife.BindColor;
 import butterknife.BindDimen;
 import butterknife.ButterKnife;
 import jp.wasabeef.glide.transformations.CropCircleTransformation;
@@ -45,11 +44,11 @@ import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.api.UserApi;
-import ooo.oxo.moments.rx.RxActivity;
 import ooo.oxo.moments.databinding.UserActivityBinding;
 import ooo.oxo.moments.feed.FeedAdapter;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.model.User;
+import ooo.oxo.moments.rx.RxActivity;
 import ooo.oxo.moments.rx.RxEndlessRecyclerView;
 import ooo.oxo.moments.util.StatusBarTintDelegate;
 import ooo.oxo.moments.util.StatusBarUtils;
@@ -65,9 +64,6 @@ public class UserActivity extends RxActivity implements
         RequestListener<String, GlideDrawable> {
 
     private static final String TAG = "UserActivity";
-
-    @BindColor(R.color.primary)
-    int colorPrimary;
 
     @BindDimen(R.dimen.srl_start)
     int refresherStart;
@@ -133,7 +129,7 @@ public class UserActivity extends RxActivity implements
                 this, binding.toolbar.getHeight(), statusBarHeight)));
 
         binding.refresher.setProgressViewOffset(true, refresherStart, refresherStart + refresherLength);
-        binding.refresher.setColorSchemeColors(colorPrimary);
+        binding.refresher.setColorSchemeResources(R.color.primary);
 
         InstaApplication application = InstaApplication.from(this);
         feedApi = application.createApi(FeedApi.class);

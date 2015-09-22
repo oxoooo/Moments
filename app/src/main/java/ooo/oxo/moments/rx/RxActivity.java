@@ -21,7 +21,7 @@ package ooo.oxo.moments.rx;
 import android.support.v7.app.AppCompatActivity;
 
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
+import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
@@ -30,28 +30,26 @@ public class RxActivity extends AppCompatActivity {
 
     private final CompositeSubscription subscriptions = new CompositeSubscription();
 
+    protected void subscribe(Subscription subscription) {
+        subscriptions.add(subscription);
+    }
+
     protected <T> void subscribe(Observable<T> observable,
                                  Action1<T> onNext) {
-        subscriptions.add(observable
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(onNext));
+        subscribe(observable.subscribe(onNext));
     }
 
     protected <T> void subscribe(Observable<T> observable,
                                  Action1<? super T> onNext,
                                  Action1<Throwable> onError) {
-        subscriptions.add(observable
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(onNext, onError));
+        subscribe(observable.subscribe(onNext, onError));
     }
 
     protected <T> void subscribe(Observable<T> observable,
                                  Action1<? super T> onNext,
                                  Action1<Throwable> onError,
                                  Action0 onComplete) {
-        subscriptions.add(observable
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(onNext, onError, onComplete));
+        subscribe(observable.subscribe(onNext, onError, onComplete));
     }
 
     @Override

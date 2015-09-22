@@ -28,8 +28,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
+
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -37,11 +40,14 @@ import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.MainActivity;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.FeedApi;
-import ooo.oxo.moments.rx.RxFragment;
 import ooo.oxo.moments.feed.FeedAdapter;
-import ooo.oxo.moments.user.UserGridAdapter;
+import ooo.oxo.moments.model.Media;
+import ooo.oxo.moments.rx.RxArrayRecyclerAdapter;
 import ooo.oxo.moments.rx.RxEndlessRecyclerView;
+import ooo.oxo.moments.rx.RxFragment;
+import ooo.oxo.moments.user.UserGridAdapter;
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 
 public class ExploreFragment extends RxFragment implements
         UserGridAdapter.GridListener {
@@ -106,40 +112,35 @@ public class ExploreFragment extends RxFragment implements
         adapter.clear();
     }
 
-    private void subscribeAppending(Observable<FeedApi.FeedEnvelope> observable) {
-        observable = observable.cache();
-
-        subscribe(observable, envelope -> refresher.setRefreshing(false));
-
-        subscribe(observable.filter(envelope -> envelope.items != null),
-                envelope -> adapter.addAll(envelope.items));
-    }
-
-    private void subscribeRefreshing(Observable<FeedApi.FeedEnvelope> observable) {
-        observable = observable.cache();
-
-        subscribe(observable, envelope -> refresher.setRefreshing(false));
-
-        subscribe(observable.filter(envelope -> envelope.items != null),
-                envelope -> adapter.replaceWith(envelope.items));
-    }
-
     private void setupEndlessLoading() {
-        subscribeAppending(RxEndlessRecyclerView.reachesEnd(content)
-                .flatMap(position -> {
-                    refresher.setRefreshing(true);
-                    return feedApi.popular(adapter.get(position).id);
-                }));
+        subscribe(RxEndlessRecyclerView.reachesEnd(content).map(adapter::get)
+                .flatMap(last -> load(last.id))
+                .subscribe(RxArrayRecyclerAdapter.appendTo(adapter)));
     }
 
     private void setupRefresh() {
-        subscribeRefreshing(RxSwipeRefreshLayout.refreshes(refresher)
-                .flatMap(avoid -> feedApi.popular(null)));
+        subscribe(RxSwipeRefreshLayout.refreshes(refresher)
+                .flatMap(avoid -> load(null))
+                .subscribe(RxArrayRecyclerAdapter.replace(adapter)));
     }
 
     private void load() {
         refresher.post(() -> refresher.setRefreshing(true));
-        subscribeRefreshing(feedApi.popular(null));
+        subscribe(load(null), RxArrayRecyclerAdapter.replace(adapter));
+    }
+
+    private Observable<List<Media>> load(String maxId) {
+        return feedApi.popular(maxId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe(() -> refresher.setRefreshing(true))
+                .doOnCompleted(() -> refresher.setRefreshing(false))
+                .doOnError(this::showError)
+                .filter(envelope -> envelope.items != null)
+                .map(envelope -> envelope.items);
+    }
+
+    private void showError(Throwable error) {
+        Toast.makeText(getContext(), R.string.error_network, Toast.LENGTH_SHORT).show();
     }
 
     @Override

@@ -26,13 +26,22 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
+
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.NewsApi;
+import ooo.oxo.moments.model.Story;
+import ooo.oxo.moments.rx.RxArrayRecyclerAdapter;
 import ooo.oxo.moments.rx.RxFragment;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 
 public class NewsInboxFragment extends RxFragment {
 
@@ -63,18 +72,34 @@ public class NewsInboxFragment extends RxFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         ButterKnife.bind(this, view);
 
-        refresher.setOnRefreshListener(() -> refresher.setRefreshing(false));
-
         content.setLayoutManager(new LinearLayoutManager(getContext()));
         content.setAdapter(adapter);
 
-        subscribe(newsApi.news(), envelope -> adapter.replaceWith(envelope.stories));
+        subscribe(RxSwipeRefreshLayout.refreshes(refresher)
+                .flatMap(avoid -> load())
+                .subscribe(RxArrayRecyclerAdapter.replace(adapter)));
+
+        subscribe(load().subscribe(RxArrayRecyclerAdapter.replace(adapter)));
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         adapter.clear();
+    }
+
+    private Observable<List<Story>> load() {
+        return newsApi.news()
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe(() -> refresher.setRefreshing(true))
+                .doOnCompleted(() -> refresher.setRefreshing(false))
+                .doOnError(this::showError)
+                .filter(envelope -> envelope.stories != null)
+                .map(envelope -> envelope.stories);
+    }
+
+    private void showError(Throwable error) {
+        Toast.makeText(getContext(), R.string.error_network, Toast.LENGTH_SHORT).show();
     }
 
 }
