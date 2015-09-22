@@ -33,8 +33,6 @@ import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.NewsApi;
 import ooo.oxo.moments.app.RxFragment;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 public class MyInboxFragment extends RxFragment {
 
@@ -70,10 +68,7 @@ public class MyInboxFragment extends RxFragment {
         content.setLayoutManager(new LinearLayoutManager(getContext()));
         content.setAdapter(adapter);
 
-        subscribe(newsApi.inbox()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.io()),
-                envelope -> adapter.replaceWith(envelope.oldStories));
+        subscribe(newsApi.inbox(), envelope -> adapter.replaceWith(envelope.oldStories));
     }
 
     @Override

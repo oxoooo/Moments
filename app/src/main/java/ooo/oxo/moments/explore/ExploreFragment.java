@@ -42,8 +42,6 @@ import ooo.oxo.moments.feed.FeedAdapter;
 import ooo.oxo.moments.user.UserGridAdapter;
 import ooo.oxo.moments.util.RxEndlessRecyclerView;
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 public class ExploreFragment extends RxFragment implements
         UserGridAdapter.GridListener {
@@ -130,24 +128,18 @@ public class ExploreFragment extends RxFragment implements
         subscribeAppending(RxEndlessRecyclerView.reachesEnd(content)
                 .flatMap(position -> {
                     refresher.setRefreshing(true);
-                    return load(adapter.get(position).id);
+                    return feedApi.popular(adapter.get(position).id);
                 }));
     }
 
     private void setupRefresh() {
         subscribeRefreshing(RxSwipeRefreshLayout.refreshes(refresher)
-                .flatMap(avoid -> load(null)));
+                .flatMap(avoid -> feedApi.popular(null)));
     }
 
     private void load() {
         refresher.post(() -> refresher.setRefreshing(true));
-        subscribeRefreshing(load(null));
-    }
-
-    private Observable<FeedApi.FeedEnvelope> load(String maxId) {
-        return feedApi.popular(maxId)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io());
+        subscribeRefreshing(feedApi.popular(null));
     }
 
     @Override

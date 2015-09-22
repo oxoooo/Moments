@@ -26,14 +26,17 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.jakewharton.rxbinding.support.design.widget.RxNavigationView;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import ooo.oxo.moments.app.RxActivity;
 import ooo.oxo.moments.explore.ExploreFragment;
 import ooo.oxo.moments.feed.FeedFragment;
 import ooo.oxo.moments.inbox.InboxFragment;
@@ -43,9 +46,8 @@ import ooo.oxo.moments.util.FuckingFragmentManager;
 import ooo.oxo.moments.util.ImageViewBindingUtil;
 import pocketknife.BindExtra;
 import pocketknife.PocketKnife;
-import rx.subscriptions.CompositeSubscription;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends RxActivity {
 
     private static final String TAG = "MainActivity";
 
@@ -67,8 +69,6 @@ public class MainActivity extends AppCompatActivity {
     @BindExtra("user")
     User user;
 
-    private CompositeSubscription subscriptions = new CompositeSubscription();
-
     private FuckingFragmentManager fragmentManager;
 
     @Override
@@ -87,22 +87,15 @@ public class MainActivity extends AppCompatActivity {
         fragmentManager = new FuckingFragmentManager(this, R.id.container);
 
         switchFragment(R.id.home);
-
         navigation.setCheckedItem(R.id.home);
-        navigation.setNavigationItemSelectedListener(menuItem -> {
-            if (switchFragment(menuItem.getItemId())) {
-                drawer.closeDrawers();
-                return true;
-            } else {
-                return false;
-            }
-        });
-    }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        subscriptions.unsubscribe();
+        subscribe(
+                RxNavigationView.itemSelections(navigation)
+                        .map(MenuItem::getItemId)
+                        .map(this::switchFragment)
+                        .filter(result -> result),
+                result -> drawer.closeDrawers()
+        );
     }
 
     public void openNavigation() {

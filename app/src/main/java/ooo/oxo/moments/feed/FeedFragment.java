@@ -44,8 +44,6 @@ import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.user.UserActivity;
 import ooo.oxo.moments.util.RxEndlessRecyclerView;
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 public class FeedFragment extends RxFragment implements
         FeedAdapter.FeedListener {
@@ -132,24 +130,18 @@ public class FeedFragment extends RxFragment implements
         subscribeAppending(RxEndlessRecyclerView.reachesEnd(content)
                 .flatMap(position -> {
                     refresher.setRefreshing(true);
-                    return load(adapter.get(position).id);
+                    return feedApi.timeline(adapter.get(position).id);
                 }));
     }
 
     private void setupRefresh() {
         subscribeRefreshing(RxSwipeRefreshLayout.refreshes(refresher)
-                .flatMap(avoid -> load(null)));
+                .flatMap(avoid -> feedApi.timeline(null)));
     }
 
     private void load() {
         refresher.post(() -> refresher.setRefreshing(true));
-        subscribeRefreshing(load(null));
-    }
-
-    private Observable<FeedApi.FeedEnvelope> load(String maxId) {
-        return feedApi.timeline(maxId)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io());
+        subscribeRefreshing(feedApi.timeline(null));
     }
 
     @Override
