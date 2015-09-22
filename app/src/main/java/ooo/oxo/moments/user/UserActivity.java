@@ -277,7 +277,6 @@ public class UserActivity extends RxActivity implements
 
         Intent intent = new Intent(this, UserActivity.class);
         intent.putExtra("id", id);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 

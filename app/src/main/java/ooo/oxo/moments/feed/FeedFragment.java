@@ -151,7 +151,6 @@ public class FeedFragment extends RxFragment implements
         Intent intent = new Intent(getContext(), UserActivity.class);
         intent.putExtra("user", item.user);
         intent.putExtra("from_post", item.id);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                 getActivity(), holder.binding.avatar, item.id + "_avatar");
@@ -163,7 +162,6 @@ public class FeedFragment extends RxFragment implements
     public void onUserClick(long id) {
         Intent intent = new Intent(getContext(), UserActivity.class);
         intent.putExtra("id", id);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 

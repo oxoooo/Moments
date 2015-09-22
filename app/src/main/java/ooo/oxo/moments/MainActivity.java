@@ -36,14 +36,14 @@ import com.jakewharton.rxbinding.support.design.widget.RxNavigationView;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import ooo.oxo.moments.rx.RxActivity;
+import ooo.oxo.moments.app.FuckingFragmentManager;
+import ooo.oxo.moments.binding.ImageViewBindingUtil;
 import ooo.oxo.moments.explore.ExploreFragment;
 import ooo.oxo.moments.feed.FeedFragment;
 import ooo.oxo.moments.inbox.InboxFragment;
 import ooo.oxo.moments.model.User;
+import ooo.oxo.moments.rx.RxActivity;
 import ooo.oxo.moments.user.UserActivity;
-import ooo.oxo.moments.app.FuckingFragmentManager;
-import ooo.oxo.moments.binding.ImageViewBindingUtil;
 import pocketknife.BindExtra;
 import pocketknife.PocketKnife;
 
@@ -126,7 +126,6 @@ public class MainActivity extends RxActivity {
         Intent intent = new Intent(this, UserActivity.class);
         intent.putExtra("user", user);
         intent.putExtra("from_post", "navigation");
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         @SuppressWarnings("unchecked")
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this,
