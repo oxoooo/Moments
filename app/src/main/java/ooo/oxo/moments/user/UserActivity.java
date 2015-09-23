@@ -27,6 +27,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -34,6 +35,7 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import java.util.List;
 
@@ -48,7 +50,6 @@ import ooo.oxo.moments.databinding.UserActivityBinding;
 import ooo.oxo.moments.feed.FeedAdapter;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.model.User;
-import ooo.oxo.moments.rx.RxActivity;
 import ooo.oxo.moments.rx.RxEndlessRecyclerView;
 import ooo.oxo.moments.util.StatusBarTintDelegate;
 import ooo.oxo.moments.util.StatusBarUtils;
@@ -57,9 +58,8 @@ import pocketknife.NotRequired;
 import pocketknife.PocketKnife;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
-public class UserActivity extends RxActivity implements
+public class UserActivity extends RxAppCompatActivity implements
         UserGridAdapter.GridListener,
         RequestListener<String, GlideDrawable> {
 
@@ -160,10 +160,26 @@ public class UserActivity extends RxActivity implements
 
         viewAsStream();
 
-        setupEndlessLoading();
-        setupRefresh();
+        RxEndlessRecyclerView.reachesEnd(binding.content)
+                .compose(bindToLifecycle())
+                .map(this::getId)
+                .flatMap(this::loadFeed)
+                .subscribe(this::addAll);
 
-        load();
+        RxSwipeRefreshLayout.refreshes(binding.refresher)
+                .compose(bindToLifecycle())
+                .flatMap(avoid -> loadFeed(null))
+                .subscribe(this::replaceWith);
+
+        loadFeed(null)
+                .compose(bindToLifecycle())
+                .subscribe(this::replaceWith);
+
+        loadUser()
+                .compose(bindToLifecycle())
+                .subscribe(this::populateProfile);
+
+        binding.refresher.post(() -> binding.refresher.setRefreshing(true));
     }
 
     private String getId(int position) {
@@ -189,54 +205,25 @@ public class UserActivity extends RxActivity implements
         gridAdapter.addAll(items);
     }
 
-    private void subscribeAppending(Observable<FeedApi.FeedEnvelope> observable) {
-        observable = observable.cache();
-
-        subscribe(observable, envelope -> binding.refresher.setRefreshing(false));
-
-        subscribe(observable.filter(envelope -> envelope.items != null),
-                envelope -> addAll(envelope.items));
-    }
-
-    private void subscribeRefreshing(Observable<FeedApi.FeedEnvelope> observable) {
-        observable = observable.cache();
-
-        subscribe(observable, envelope -> binding.refresher.setRefreshing(false));
-
-        subscribe(observable.filter(envelope -> envelope.items != null),
-                envelope -> replaceWith(envelope.items));
-    }
-
-    private void setupEndlessLoading() {
-        subscribeAppending(RxEndlessRecyclerView.reachesEnd(binding.content)
-                .flatMap(position -> {
-                    binding.refresher.setRefreshing(true);
-                    return loadFeed(getId(position));
-                }));
-    }
-
-    private void setupRefresh() {
-        // FIXME: 找不到优雅的方式同时刷新用户资料
-        subscribeRefreshing(RxSwipeRefreshLayout.refreshes(binding.refresher)
-                .flatMap(avoid -> loadFeed(null)));
-    }
-
-    private void load() {
-        binding.refresher.post(() -> binding.refresher.setRefreshing(true));
-        loadUser().subscribe(envelope -> populateProfile(envelope.user));
-        subscribeRefreshing(loadFeed(null));
-    }
-
-    private Observable<FeedApi.FeedEnvelope> loadFeed(String maxId) {
+    private Observable<List<Media>> loadFeed(String maxId) {
         return feedApi.ofUser(id, maxId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe(() -> binding.refresher.setRefreshing(true))
+                .doOnCompleted(() -> binding.refresher.setRefreshing(false))
+                .doOnError(this::showError)
+                .filter(envelope -> envelope.items != null)
+                .map(envelope -> envelope.items);
     }
 
-    private Observable<UserApi.UserEnvelope> loadUser() {
+    private Observable<User> loadUser() {
         return userApi.infoOf(id)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(this::showError)
+                .map(envelope -> envelope.user);
+    }
+
+    private void showError(Throwable error) {
+        Toast.makeText(this, R.string.error_network, Toast.LENGTH_SHORT).show();
     }
 
     private void populateProfile(User profile) {

@@ -33,6 +33,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
+import com.trello.rxlifecycle.components.support.RxFragment;
 
 import java.util.List;
 
@@ -45,7 +46,6 @@ import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.rx.RxArrayRecyclerAdapter;
 import ooo.oxo.moments.rx.RxEndlessRecyclerView;
-import ooo.oxo.moments.rx.RxFragment;
 import ooo.oxo.moments.user.UserActivity;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -101,33 +101,28 @@ public class FeedFragment extends RxFragment implements
         content.setLayoutManager(new LinearLayoutManager(getContext()));
         content.setAdapter(adapter);
 
-        setupEndlessLoading();
-        setupRefresh();
+        RxEndlessRecyclerView.reachesEnd(content)
+                .compose(bindToLifecycle())
+                .map(adapter::get)
+                .flatMap(last -> load(last.id))
+                .subscribe(RxArrayRecyclerAdapter.appendTo(adapter));
 
-        load();
+        RxSwipeRefreshLayout.refreshes(refresher)
+                .compose(bindToLifecycle())
+                .flatMap(avoid -> load(null))
+                .subscribe(RxArrayRecyclerAdapter.replace(adapter));
+
+        load(null)
+                .compose(bindToLifecycle())
+                .subscribe(RxArrayRecyclerAdapter.replace(adapter));
+
+        refresher.post(() -> refresher.setRefreshing(true));
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         adapter.clear();
-    }
-
-    private void setupEndlessLoading() {
-        subscribe(RxEndlessRecyclerView.reachesEnd(content).map(adapter::get)
-                .flatMap(last -> load(last.id))
-                .subscribe(RxArrayRecyclerAdapter.appendTo(adapter)));
-    }
-
-    private void setupRefresh() {
-        subscribe(RxSwipeRefreshLayout.refreshes(refresher)
-                .flatMap(avoid -> load(null))
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter)));
-    }
-
-    private void load() {
-        refresher.post(() -> refresher.setRefreshing(true));
-        subscribe(load(null), RxArrayRecyclerAdapter.replace(adapter));
     }
 
     private Observable<List<Media>> load(String maxId) {

@@ -32,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.jakewharton.rxbinding.support.design.widget.RxNavigationView;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -42,12 +43,11 @@ import ooo.oxo.moments.explore.ExploreFragment;
 import ooo.oxo.moments.feed.FeedFragment;
 import ooo.oxo.moments.inbox.InboxFragment;
 import ooo.oxo.moments.model.User;
-import ooo.oxo.moments.rx.RxActivity;
 import ooo.oxo.moments.user.UserActivity;
 import pocketknife.BindExtra;
 import pocketknife.PocketKnife;
 
-public class MainActivity extends RxActivity {
+public class MainActivity extends RxAppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
@@ -89,13 +89,11 @@ public class MainActivity extends RxActivity {
         switchFragment(R.id.home);
         navigation.setCheckedItem(R.id.home);
 
-        subscribe(
-                RxNavigationView.itemSelections(navigation)
-                        .map(MenuItem::getItemId)
-                        .map(this::switchFragment)
-                        .filter(result -> result),
-                result -> drawer.closeDrawers()
-        );
+        RxNavigationView.itemSelections(navigation)
+                .compose(bindToLifecycle())
+                .map(MenuItem::getItemId)
+                .filter(this::switchFragment)
+                .subscribe(result -> drawer.closeDrawers());
     }
 
     public void openNavigation() {

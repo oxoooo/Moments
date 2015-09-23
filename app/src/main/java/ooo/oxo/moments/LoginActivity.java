@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,19 +32,19 @@ import android.widget.Toast;
 
 import com.jakewharton.rxbinding.view.RxView;
 import com.jakewharton.rxbinding.widget.RxTextView;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ooo.oxo.moments.api.AccountApi;
-import ooo.oxo.moments.rx.RxActivity;
 import ooo.oxo.moments.model.LoginForm;
 import ooo.oxo.moments.model.User;
 import retrofit.Callback;
 import retrofit.Response;
 import rx.Observable;
 
-public class LoginActivity extends RxActivity implements Callback<AccountApi.LoginEnvelope> {
+public class LoginActivity extends RxAppCompatActivity implements Callback<AccountApi.LoginEnvelope> {
 
     private static final String TAG = "LoginActivity";
 
@@ -80,10 +81,10 @@ public class LoginActivity extends RxActivity implements Callback<AccountApi.Log
         setSupportActionBar(toolbar);
         setTitle(null);
 
-        subscribe(Observable
-                        .merge(RxTextView.textChanges(username), RxTextView.textChanges(password))
-                        .map(avoid -> username.getText().length() > 0 && password.getText().length() > 0),
-                RxView.enabled(login));
+        Observable.merge(RxTextView.textChanges(username), RxTextView.textChanges(password))
+                .compose(bindToLifecycle())
+                .map(avoid -> !TextUtils.isEmpty(username.getText()) && !TextUtils.isEmpty(password.getText()))
+                .subscribe(RxView.enabled(login));
     }
 
     @Override

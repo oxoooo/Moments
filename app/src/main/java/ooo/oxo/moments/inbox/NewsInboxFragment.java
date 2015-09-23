@@ -29,6 +29,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
+import com.trello.rxlifecycle.components.support.RxFragment;
 
 import java.util.List;
 
@@ -39,7 +40,6 @@ import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.NewsApi;
 import ooo.oxo.moments.model.Story;
 import ooo.oxo.moments.rx.RxArrayRecyclerAdapter;
-import ooo.oxo.moments.rx.RxFragment;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
@@ -75,11 +75,13 @@ public class NewsInboxFragment extends RxFragment {
         content.setLayoutManager(new LinearLayoutManager(getContext()));
         content.setAdapter(adapter);
 
-        subscribe(RxSwipeRefreshLayout.refreshes(refresher)
+        RxSwipeRefreshLayout.refreshes(refresher)
+                .compose(bindToLifecycle())
                 .flatMap(avoid -> load())
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter)));
+                .subscribe(RxArrayRecyclerAdapter.replace(adapter));
 
-        subscribe(load().subscribe(RxArrayRecyclerAdapter.replace(adapter)));
+        load().compose(bindToLifecycle())
+                .subscribe(RxArrayRecyclerAdapter.replace(adapter));
     }
 
     @Override
