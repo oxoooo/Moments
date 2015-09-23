@@ -18,15 +18,13 @@
 
 package ooo.oxo.moments.user;
 
-import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -34,25 +32,15 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
-import java.util.List;
-
-import butterknife.BindDimen;
-import butterknife.ButterKnife;
 import jp.wasabeef.glide.transformations.CropCircleTransformation;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
-import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.api.UserApi;
 import ooo.oxo.moments.databinding.UserActivityBinding;
-import ooo.oxo.moments.feed.FeedAdapter;
-import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.model.User;
-import ooo.oxo.moments.rx.RxEndlessRecyclerView;
-import ooo.oxo.moments.util.StatusBarTintDelegate;
-import ooo.oxo.moments.util.StatusBarUtils;
+import ooo.oxo.moments.widget.IconifiedPagerAdapter;
 import pocketknife.BindExtra;
 import pocketknife.NotRequired;
 import pocketknife.PocketKnife;
@@ -60,24 +48,9 @@ import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class UserActivity extends RxAppCompatActivity implements
-        UserGridAdapter.GridListener,
         RequestListener<String, GlideDrawable> {
 
     private static final String TAG = "UserActivity";
-
-    @BindDimen(R.dimen.srl_start)
-    int refresherStart;
-
-    @BindDimen(R.dimen.srl_length)
-    int refresherLength;
-
-    @BindDimen(R.dimen.item_margin_grid)
-    int marginGrid;
-
-    @BindDimen(R.dimen.item_margin_stream)
-    int marginStream;
-
-    int statusBarHeight = 0;
 
     @BindExtra("id")
     @NotRequired
@@ -93,17 +66,9 @@ public class UserActivity extends RxAppCompatActivity implements
 
     private UserActivityBinding binding;
 
-    private MenuItem viewAsGrid;
-    private MenuItem viewAsStream;
-
-    private FeedApi feedApi;
     private UserApi userApi;
 
-    private LinearLayoutManager streamLayoutManager;
-    private FeedAdapter streamAdapter;
-
-    private GridLayoutManager gridLayoutManager;
-    private UserGridAdapter gridAdapter;
+    private int offset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,28 +76,31 @@ public class UserActivity extends RxAppCompatActivity implements
 
         binding = DataBindingUtil.setContentView(this, R.layout.user_activity);
 
-        ButterKnife.bind(this);
         PocketKnife.bindExtras(this);
 
         setTitle(null);
         setSupportActionBar(binding.toolbar);
 
-        statusBarHeight = StatusBarUtils.getStatusBarHeight(this);
-
-        binding.collapsingToolbar.setPadding(0, statusBarHeight, 0, 0);
-
-        binding.appbar.addOnOffsetChangedListener(
-                (AppBarLayout appbar, int i) -> binding.refresher.setEnabled(i == 0));
-
         binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
-        binding.toolbar.post(() -> binding.appbar.addOnOffsetChangedListener(new StatusBarTintDelegate(
-                this, binding.toolbar.getHeight(), statusBarHeight)));
 
-        binding.refresher.setProgressViewOffset(true, refresherStart, refresherStart + refresherLength);
-        binding.refresher.setColorSchemeResources(R.color.primary);
+        binding.pager.setAdapter(new Adapter());
+        binding.pager.setOffscreenPageLimit(binding.pager.getAdapter().getCount());
+        binding.pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                syncRefresherState(position);
+            }
+        });
+
+        binding.tabs.setupWithViewPager(binding.pager);
+
+        binding.appbar.addOnOffsetChangedListener((appbar, i) -> {
+            offset = i;
+            Log.d(TAG, "offset: " + i);
+            syncRefresherState(binding.pager.getCurrentItem());
+        });
 
         InstaApplication application = InstaApplication.from(this);
-        feedApi = application.createApi(FeedApi.class);
         userApi = application.createApi(UserApi.class);
 
         if (user != null) {
@@ -152,67 +120,17 @@ public class UserActivity extends RxAppCompatActivity implements
         ViewCompat.setTransitionName(binding.userName, fromPostId + "_user_name");
         ViewCompat.setTransitionName(binding.fullName, fromPostId + "_full_name");
 
-        streamLayoutManager = new LinearLayoutManager(this);
-        streamAdapter = new FeedAdapter(this, this);
-
-        gridLayoutManager = new GridLayoutManager(this, 3);
-        gridAdapter = new UserGridAdapter(this, this);
-
-        viewAsStream();
-
-        RxEndlessRecyclerView.reachesEnd(binding.content)
-                .compose(bindToLifecycle())
-                .map(this::getId)
-                .flatMap(this::loadFeed)
-                .subscribe(this::addAll);
-
-        RxSwipeRefreshLayout.refreshes(binding.refresher)
-                .compose(bindToLifecycle())
-                .flatMap(avoid -> loadFeed(null))
-                .subscribe(this::replaceWith);
-
-        loadFeed(null)
-                .compose(bindToLifecycle())
-                .subscribe(this::replaceWith);
-
         loadUser()
                 .compose(bindToLifecycle())
                 .subscribe(this::populateProfile);
-
-        binding.refresher.post(() -> binding.refresher.setRefreshing(true));
     }
 
-    private String getId(int position) {
-        if (binding.content.getLayoutManager() == streamLayoutManager) {
-            return streamAdapter.get(position).id;
-        } else if (binding.content.getLayoutManager() == gridLayoutManager) {
-            return gridAdapter.get(position).id;
-        } else {
-            return null;
+    private void syncRefresherState(int tab) {
+        Object fragment = binding.pager.getAdapter().instantiateItem(binding.pager, tab);
+
+        if (fragment instanceof RefreshEnabler) {
+            ((RefreshEnabler) fragment).setCanRefresh(offset == 0);
         }
-    }
-
-    private void addAll(List<Media> items) {
-        if (binding.content.getLayoutManager() == streamLayoutManager) {
-            streamAdapter.addAll(items);
-        } else if (binding.content.getLayoutManager() == gridLayoutManager) {
-            gridAdapter.addAll(items);
-        }
-    }
-
-    private void replaceWith(List<Media> items) {
-        streamAdapter.addAll(items);
-        gridAdapter.addAll(items);
-    }
-
-    private Observable<List<Media>> loadFeed(String maxId) {
-        return feedApi.ofUser(id, maxId)
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(() -> binding.refresher.setRefreshing(true))
-                .doOnCompleted(() -> binding.refresher.setRefreshing(false))
-                .doOnError(this::showError)
-                .filter(envelope -> envelope.items != null)
-                .map(envelope -> envelope.items);
     }
 
     private Observable<User> loadUser() {
@@ -222,7 +140,7 @@ public class UserActivity extends RxAppCompatActivity implements
                 .map(envelope -> envelope.user);
     }
 
-    private void showError(Throwable error) {
+    void showError(Throwable error) {
         Toast.makeText(this, R.string.error_network, Toast.LENGTH_SHORT).show();
     }
 
@@ -252,82 +170,49 @@ public class UserActivity extends RxAppCompatActivity implements
         return false;
     }
 
-    @Override
-    public void onUserClick(FeedAdapter.ViewHolder holder) {
-    }
+    private class Adapter extends FragmentStatePagerAdapter implements IconifiedPagerAdapter {
 
-    @Override
-    public void onUserClick(long id) {
-        if (this.id == id) {
-            return;
+        public Adapter() {
+            super(getSupportFragmentManager());
         }
 
-        Intent intent = new Intent(this, UserActivity.class);
-        intent.putExtra("id", id);
-        startActivity(intent);
-    }
-
-    @Override
-    public void onImageClick(FeedAdapter.ViewHolder holder) {
-    }
-
-    @Override
-    public void onImageClick(UserGridAdapter.ViewHolder holder) {
-    }
-
-    @Override
-    public void onLikesClick(FeedAdapter.ViewHolder holder) {
-    }
-
-    @Override
-    public void onLike(FeedAdapter.ViewHolder holder) {
-    }
-
-    @Override
-    public void onComment(FeedAdapter.ViewHolder holder) {
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.user, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        viewAsGrid = menu.findItem(R.id.view_as_grid);
-        viewAsStream = menu.findItem(R.id.view_as_stream);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.view_as_grid:
-                viewAsGrid.setVisible(false);
-                viewAsStream.setVisible(true);
-                viewAsGrid();
-                return true;
-            case R.id.view_as_stream:
-                viewAsStream.setVisible(false);
-                viewAsGrid.setVisible(true);
-                viewAsStream();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0:
+                    return UserGridFragment.newFragment(id);
+                case 1:
+                    return UserStreamFragment.newFragment(id);
+                case 2:
+                    return new Fragment();
+                case 3:
+                    return new Fragment();
+                default:
+                    return null;
+            }
         }
-    }
 
-    private void viewAsStream() {
-        binding.content.setPadding(marginStream, marginStream, marginStream, marginStream);
-        binding.content.setLayoutManager(streamLayoutManager);
-        binding.content.setAdapter(streamAdapter);
-    }
+        @Override
+        public int getPageIcon(int position) {
+            switch (position) {
+                case 0:
+                    return R.drawable.ic_view_module_white_24dp;
+                case 1:
+                    return R.drawable.ic_view_stream_white_24dp;
+                case 2:
+                    return R.drawable.ic_map_white_24dp;
+                case 3:
+                    return R.drawable.ic_person_pin_white_24dp;
+                default:
+                    return 0;
+            }
+        }
 
-    private void viewAsGrid() {
-        binding.content.setPadding(marginGrid, marginGrid, marginGrid, marginGrid);
-        binding.content.setLayoutManager(gridLayoutManager);
-        binding.content.setAdapter(gridAdapter);
+        @Override
+        public int getCount() {
+            return 4;
+        }
+
     }
 
 }

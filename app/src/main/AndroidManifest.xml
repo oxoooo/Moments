@@ -64,7 +64,9 @@
 
         <activity android:name=".MainActivity" />
 
-        <activity android:name=".user.UserActivity" />
+        <activity
+            android:name=".user.UserActivity"
+            android:theme="@style/UserTheme" />
 
     </application>
 

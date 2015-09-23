@@ -16,20 +16,23 @@
   ~ along with this program;  if not, see <http://www.gnu.org/licenses/>.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".user.UserActivity">
 
-    <item
-        android:id="@+id/view_as_grid"
-        android:icon="@drawable/ic_view_module_white_24dp"
-        android:title="@string/view_as_grid"
-        app:showAsAction="ifRoom" />
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refresher"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <item
-        android:id="@+id/view_as_stream"
-        android:icon="@drawable/ic_view_stream_white_24dp"
-        android:title="@string/view_as_stream"
-        android:visible="false"
-        app:showAsAction="ifRoom" />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="@dimen/item_margin_stream"
+            tools:padding="8dp" />
 
-</menu>
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+</layout>

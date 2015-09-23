@@ -16,19 +16,16 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-package ooo.oxo.moments.explore;
+package ooo.oxo.moments.user;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
 import com.trello.rxlifecycle.components.support.RxFragment;
@@ -38,29 +35,21 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
-import ooo.oxo.moments.MainActivity;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.rx.RxArrayRecyclerAdapter;
 import ooo.oxo.moments.rx.RxEndlessRecyclerView;
-import ooo.oxo.moments.user.UserGridAdapter;
+import pocketknife.BindArgument;
+import pocketknife.PocketKnife;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class ExploreFragment extends RxFragment implements
+public class UserGridFragment extends RxFragment implements
+        RefreshEnabler,
         UserGridAdapter.GridListener {
 
-    private static final String TAG = "ExploreFragment";
-
-    @Bind(R.id.appbar)
-    AppBarLayout appbar;
-
-    @Bind(R.id.toolbar)
-    Toolbar toolbar;
-
-    @Bind(R.id.status_bar)
-    View statusBar;
+    private static final String TAG = "UserGridFragment";
 
     @Bind(R.id.refresher)
     SwipeRefreshLayout refresher;
@@ -68,9 +57,22 @@ public class ExploreFragment extends RxFragment implements
     @Bind(R.id.content)
     RecyclerView content;
 
+    @BindArgument("id")
+    long id;
+
     private FeedApi feedApi;
 
     private UserGridAdapter adapter;
+
+    public static UserGridFragment newFragment(long id) {
+        Bundle arguments = new Bundle();
+        arguments.putLong("id", id);
+
+        UserGridFragment fragment = new UserGridFragment();
+        fragment.setArguments(arguments);
+
+        return fragment;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,17 +84,13 @@ public class ExploreFragment extends RxFragment implements
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.explore_fragment, container, false);
+        return inflater.inflate(R.layout.user_grid_fragment, container, false);
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         ButterKnife.bind(this, view);
-
-        appbar.addOnOffsetChangedListener((v, i) -> statusBar.setAlpha(Math.min(
-                1, (float) -i / (float) (appbar.getHeight() - statusBar.getHeight()))));
-
-        toolbar.setNavigationOnClickListener(v -> ((MainActivity) getActivity()).openNavigation());
+        PocketKnife.bindArguments(this);
 
         refresher.setColorSchemeResources(R.color.primary);
 
@@ -124,22 +122,22 @@ public class ExploreFragment extends RxFragment implements
     }
 
     private Observable<List<Media>> load(String maxId) {
-        return feedApi.popular(maxId)
+        return feedApi.ofUser(id, maxId)
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSubscribe(() -> refresher.setRefreshing(true))
                 .doOnCompleted(() -> refresher.setRefreshing(false))
-                .doOnError(this::showError)
+                .doOnError(((UserActivity) getActivity())::showError)
                 .filter(envelope -> envelope.items != null)
                 .map(envelope -> envelope.items);
     }
 
-    private void showError(Throwable error) {
-        Toast.makeText(getContext(), R.string.error_network, Toast.LENGTH_SHORT).show();
+    @Override
+    public void setCanRefresh(boolean canRefresh) {
+        refresher.setEnabled(canRefresh);
     }
 
     @Override
     public void onImageClick(UserGridAdapter.ViewHolder holder) {
-
     }
 
 }

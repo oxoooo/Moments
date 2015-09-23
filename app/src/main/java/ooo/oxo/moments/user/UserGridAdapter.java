@@ -24,7 +24,6 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import ooo.oxo.moments.databinding.UserGridItemBinding;
-import ooo.oxo.moments.feed.FeedAdapter;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.widget.ArrayRecyclerAdapter;
 
@@ -48,7 +47,7 @@ public class UserGridAdapter extends ArrayRecyclerAdapter<Media, UserGridAdapter
         holder.binding.setItem(get(position));
     }
 
-    public interface GridListener extends FeedAdapter.FeedListener {
+    public interface GridListener {
 
         void onImageClick(ViewHolder holder);
 
