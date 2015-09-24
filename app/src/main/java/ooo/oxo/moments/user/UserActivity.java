@@ -18,6 +18,7 @@
 
 package ooo.oxo.moments.user;
 
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -25,6 +26,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -34,11 +36,14 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import jp.wasabeef.glide.transformations.CropCircleTransformation;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.UserApi;
 import ooo.oxo.moments.databinding.UserActivityBinding;
+import ooo.oxo.moments.friendship.FriendshipActivity;
 import ooo.oxo.moments.model.User;
 import ooo.oxo.moments.widget.IconifiedPagerAdapter;
 import pocketknife.BindExtra;
@@ -68,6 +73,8 @@ public class UserActivity extends RxAppCompatActivity implements
 
     private UserApi userApi;
 
+    private boolean isAvatarLoaded = false;
+
     private int offset;
 
     @Override
@@ -76,6 +83,7 @@ public class UserActivity extends RxAppCompatActivity implements
 
         binding = DataBindingUtil.setContentView(this, R.layout.user_activity);
 
+        ButterKnife.bind(this);
         PocketKnife.bindExtras(this);
 
         setTitle(null);
@@ -104,6 +112,10 @@ public class UserActivity extends RxAppCompatActivity implements
         userApi = application.createApi(UserApi.class);
 
         if (user != null) {
+            supportPostponeEnterTransition();
+            ViewCompat.setTransitionName(binding.avatar, fromPostId + "_avatar");
+            ViewCompat.setTransitionName(binding.userName, fromPostId + "_user_name");
+            ViewCompat.setTransitionName(binding.fullName, fromPostId + "_full_name");
             populateProfile(user);
         }
 
@@ -114,11 +126,6 @@ public class UserActivity extends RxAppCompatActivity implements
         if (id == 0) {
             throw new IllegalStateException("Must specify which user to load");
         }
-
-        supportPostponeEnterTransition();
-        ViewCompat.setTransitionName(binding.avatar, fromPostId + "_avatar");
-        ViewCompat.setTransitionName(binding.userName, fromPostId + "_user_name");
-        ViewCompat.setTransitionName(binding.fullName, fromPostId + "_full_name");
 
         loadUser()
                 .compose(bindToLifecycle())
@@ -146,13 +153,17 @@ public class UserActivity extends RxAppCompatActivity implements
 
     private void populateProfile(User profile) {
         binding.setUser(profile);
-        Glide.with(this)
-                .load(profile.profilePicUrl)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .bitmapTransform(new CropCircleTransformation(this))
-                .crossFade(0)
-                .listener(this)
-                .into(binding.avatar);
+
+        if (!isAvatarLoaded) {
+            isAvatarLoaded = true;
+            Glide.with(this).load(profile.profilePicUrl)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .bitmapTransform(new CropCircleTransformation(this))
+                    .listener(this)
+                    .into(binding.avatar);
+        }
+
+        user = profile;
     }
 
     @Override
@@ -168,6 +179,24 @@ public class UserActivity extends RxAppCompatActivity implements
                                    boolean isFirstResource) {
         supportStartPostponedEnterTransition();
         return false;
+    }
+
+    @OnClick(R.id.followers_container)
+    void openFollowers(View v) {
+        Intent intent = new Intent(this, FriendshipActivity.class);
+        intent.putExtra("id", id);
+        intent.putExtra("user", user);
+        intent.putExtra("what", "followers");
+        startActivity(intent);
+    }
+
+    @OnClick(R.id.following_container)
+    void openFollowing(View v) {
+        Intent intent = new Intent(this, FriendshipActivity.class);
+        intent.putExtra("id", id);
+        intent.putExtra("user", user);
+        intent.putExtra("what", "following");
+        startActivity(intent);
     }
 
     private class Adapter extends FragmentStatePagerAdapter implements IconifiedPagerAdapter {

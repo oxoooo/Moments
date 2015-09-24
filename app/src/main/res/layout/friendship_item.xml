@@ -1,0 +1,79 @@
+<!--
+  ~ Moments - To the best Instagram client
+  ~ Copyright (C) 2015  XiNGRZ <xxx@oxo.ooo>
+  ~
+  ~ This program is free software; you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation; either version 2 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program;  if not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="user"
+            type="ooo.oxo.moments.model.User" />
+
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:foreground="?selectableItemBackground"
+        tools:layout_marginTop="25dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/avatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_margin="16dp"
+                app:roundImage="@{user.profilePicUrl}"
+                tools:src="#ccc" />
+
+            <TextView
+                android:id="@+id/username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@+id/avatar"
+                android:layout_toStartOf="@+id/follow"
+                android:text="@{user.username}"
+                android:textColor="?colorPrimary"
+                android:textStyle="bold"
+                tools:text="xingrz" />
+
+            <Button
+                android:id="@+id/follow"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_margin="16dp"
+                android:backgroundTint="?colorPrimary"
+                android:minWidth="80dp"
+                android:text="关注"
+                android:textSize="12sp"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark" />
+
+        </RelativeLayout>
+
+    </FrameLayout>
+
+</layout>

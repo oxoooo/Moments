@@ -18,12 +18,23 @@
 
 package ooo.oxo.moments.api;
 
+import java.util.List;
+
+import ooo.oxo.moments.model.User;
 import retrofit.Call;
 import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.Path;
+import retrofit.http.Query;
+import rx.Observable;
 
 public interface FriendshipApi {
+
+    @GET("v1/friendships/{id}/followers/")
+    Observable<UsersEnvelope> followers(@Path("id") long id, @Query("max_id") String maxId);
+
+    @GET("v1/friendships/{id}/following/")
+    Observable<UsersEnvelope> following(@Path("id") long id, @Query("max_id") String maxId);
 
     @GET("v1/friendships/autocomplete_user_list/")
     Call autocompleteUserList();
@@ -42,5 +53,13 @@ public interface FriendshipApi {
 
     @POST("v1/friendships/block/{id}/")
     Call block(@Path("id") String id);
+
+    class UsersEnvelope {
+
+        public List<User> users;
+
+        public String nextMaxId;
+
+    }
 
 }

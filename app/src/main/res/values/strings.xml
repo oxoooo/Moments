@@ -51,6 +51,13 @@
     <string name="inbox_news">News</string>
     <string name="inbox_mine">Mine</string>
 
+    <string name="friendship_follow">Follow</string>
+    <string name="friendship_followed">Followed</string>
+    <string name="friendship_requested">Requested</string>
+
+    <string name="friendship_his_followers">%s\'s followers</string>
+    <string name="friendship_his_following">%s\'s following</string>
+
     <string name="error_network">Network failure, try again later.</string>
 
 </resources>

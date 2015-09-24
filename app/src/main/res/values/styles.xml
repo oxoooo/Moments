@@ -49,7 +49,6 @@
 
     <style name="UserTheme" parent="AppTheme">
         <item name="android:windowTranslucentStatus">false</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">false</item>
     </style>
 
 </resources>

@@ -68,6 +68,10 @@
             android:name=".user.UserActivity"
             android:theme="@style/UserTheme" />
 
+        <activity
+            android:name=".friendship.FriendshipActivity"
+            android:theme="@style/UserTheme" />
+
     </application>
 
 </manifest>

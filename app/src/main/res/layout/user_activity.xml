@@ -170,6 +170,7 @@
                             android:id="@+id/followers_container"
                             android:layout_width="100dp"
                             android:layout_height="wrap_content"
+                            android:background="?selectableItemBackgroundBorderless"
                             android:gravity="center_horizontal"
                             android:orientation="vertical">
 
@@ -197,6 +198,7 @@
                             android:id="@+id/following_container"
                             android:layout_width="100dp"
                             android:layout_height="wrap_content"
+                            android:background="?selectableItemBackgroundBorderless"
                             android:gravity="center_horizontal"
                             android:orientation="vertical">
 
