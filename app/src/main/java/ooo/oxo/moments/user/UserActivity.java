@@ -215,7 +215,7 @@ public class UserActivity extends RxAppCompatActivity implements
                 case 2:
                     return new Fragment();
                 case 3:
-                    return new Fragment();
+                    return UserTaggedFragment.newFragment(id);
                 default:
                     return null;
             }
