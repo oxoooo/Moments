@@ -72,6 +72,8 @@
             android:name=".friendship.FriendshipActivity"
             android:theme="@style/UserTheme" />
 
+        <activity android:name=".ViewerActivity" android:theme="@style/ViewerTheme" />
+
     </application>
 
 </manifest>

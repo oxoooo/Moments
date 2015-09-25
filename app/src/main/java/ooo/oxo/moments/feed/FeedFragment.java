@@ -19,6 +19,7 @@
 package ooo.oxo.moments.feed;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -42,11 +43,13 @@ import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.MainActivity;
 import ooo.oxo.moments.R;
+import ooo.oxo.moments.ViewerActivity;
 import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.rx.RxArrayRecyclerAdapter;
 import ooo.oxo.moments.rx.RxEndlessRecyclerView;
 import ooo.oxo.moments.user.UserActivity;
+import ooo.oxo.moments.util.ImageCandidatesUtil;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
@@ -162,6 +165,17 @@ public class FeedFragment extends RxFragment implements
 
     @Override
     public void onImageClick(FeedAdapter.ViewHolder holder) {
+        Media item = adapter.get(holder.getAdapterPosition());
+        Media.Resource best = ImageCandidatesUtil.pickBest(item.imageVersions.candidates);
+
+        if (best == null) {
+            return;
+        }
+
+        Intent intent = new Intent(getContext(), ViewerActivity.class);
+        intent.setData(Uri.parse(best.url));
+
+        startActivity(intent);
     }
 
     @Override
