@@ -20,12 +20,28 @@ package ooo.oxo.moments.model;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class Story {
 
     public int type;
 
     public Args args;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+
+        if (!(o instanceof Story)) {
+            return false;
+        }
+
+        Story that = (Story) o;
+
+        return this.type == that.type && Objects.equals(this.args, that.args);
+    }
 
     public class Args {
 
@@ -41,6 +57,26 @@ public class Story {
 
         public Date timestamp;
 
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+
+            if (!(o instanceof Args)) {
+                return false;
+            }
+
+            Args that = (Args) o;
+
+            return Objects.equals(this.text, that.text)
+                    && this.profileId == that.profileId
+                    && Objects.equals(this.links, that.links)
+                    && Objects.equals(this.media, that.media)
+                    && Objects.equals(this.profileImage, that.profileImage)
+                    && Objects.equals(this.timestamp, that.timestamp);
+        }
+
         public class Link {
 
             public int start;
@@ -51,6 +87,24 @@ public class Story {
 
             public String type;
 
+            @Override
+            public boolean equals(Object o) {
+                if (o == this) {
+                    return true;
+                }
+
+                if (!(o instanceof Link)) {
+                    return false;
+                }
+
+                Link that = (Link) o;
+
+                return this.start == that.start
+                        && this.end == that.end
+                        && Objects.equals(this.id, that.id)
+                        && Objects.equals(this.type, that.type);
+            }
+
         }
 
         public class Media {
@@ -58,6 +112,21 @@ public class Story {
             public String id;
 
             public String image;
+
+            @Override
+            public boolean equals(Object o) {
+                if (o == this) {
+                    return true;
+                }
+
+                if (!(o instanceof Media)) {
+                    return false;
+                }
+
+                Media that = (Media) o;
+
+                return Objects.equals(this.id, that.id) && Objects.equals(this.image, that.image);
+            }
 
         }
 

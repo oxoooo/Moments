@@ -78,10 +78,10 @@ public class NewsInboxFragment extends RxFragment {
         RxSwipeRefreshLayout.refreshes(refresher)
                 .compose(bindToLifecycle())
                 .flatMap(avoid -> load())
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter));
+                .subscribe(RxArrayRecyclerAdapter.replace(adapter), this::showError);
 
         load().compose(bindToLifecycle())
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter));
+                .subscribe(RxArrayRecyclerAdapter.replace(adapter), this::showError);
     }
 
     @Override
@@ -95,7 +95,6 @@ public class NewsInboxFragment extends RxFragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSubscribe(() -> refresher.setRefreshing(true))
                 .doOnCompleted(() -> refresher.setRefreshing(false))
-                .doOnError(this::showError)
                 .filter(envelope -> envelope.stories != null)
                 .map(envelope -> envelope.stories);
     }

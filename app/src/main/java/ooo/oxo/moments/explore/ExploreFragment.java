@@ -107,16 +107,16 @@ public class ExploreFragment extends RxFragment implements
                 .compose(bindToLifecycle())
                 .map(adapter::get)
                 .flatMap(last -> load(last.id))
-                .subscribe(RxArrayRecyclerAdapter.appendTo(adapter));
+                .subscribe(RxArrayRecyclerAdapter.appendTo(adapter), this::showError);
 
         RxSwipeRefreshLayout.refreshes(refresher)
                 .compose(bindToLifecycle())
                 .flatMap(avoid -> load(null))
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter));
+                .subscribe(RxArrayRecyclerAdapter.replace(adapter), this::showError);
 
         load(null)
                 .compose(bindToLifecycle())
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter));
+                .subscribe(RxArrayRecyclerAdapter.replace(adapter), this::showError);
 
         refresher.post(() -> refresher.setRefreshing(true));
     }
@@ -132,7 +132,6 @@ public class ExploreFragment extends RxFragment implements
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSubscribe(() -> refresher.setRefreshing(true))
                 .doOnCompleted(() -> refresher.setRefreshing(false))
-                .doOnError(this::showError)
                 .filter(envelope -> envelope.items != null)
                 .map(envelope -> envelope.items);
     }
