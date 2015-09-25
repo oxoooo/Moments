@@ -31,9 +31,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import butterknife.ButterKnife;
@@ -45,6 +42,7 @@ import ooo.oxo.moments.api.UserApi;
 import ooo.oxo.moments.databinding.UserActivityBinding;
 import ooo.oxo.moments.friendship.FriendshipActivity;
 import ooo.oxo.moments.model.User;
+import ooo.oxo.moments.util.PostponedTransitionTrigger;
 import ooo.oxo.moments.widget.IconifiedPagerAdapter;
 import pocketknife.BindExtra;
 import pocketknife.NotRequired;
@@ -52,8 +50,7 @@ import pocketknife.PocketKnife;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class UserActivity extends RxAppCompatActivity implements
-        RequestListener<String, GlideDrawable> {
+public class UserActivity extends RxAppCompatActivity {
 
     private static final String TAG = "UserActivity";
 
@@ -72,6 +69,8 @@ public class UserActivity extends RxAppCompatActivity implements
     private UserActivityBinding binding;
 
     private UserApi userApi;
+
+    private PostponedTransitionTrigger transitionTrigger;
 
     private boolean isAvatarLoaded = false;
 
@@ -116,6 +115,7 @@ public class UserActivity extends RxAppCompatActivity implements
             ViewCompat.setTransitionName(binding.avatar, fromPostId + "_avatar");
             ViewCompat.setTransitionName(binding.userName, fromPostId + "_user_name");
             ViewCompat.setTransitionName(binding.fullName, fromPostId + "_full_name");
+            transitionTrigger = new PostponedTransitionTrigger(this);
             populateProfile(user);
         }
 
@@ -130,6 +130,12 @@ public class UserActivity extends RxAppCompatActivity implements
         loadUser()
                 .compose(bindToLifecycle())
                 .subscribe(this::populateProfile);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        transitionTrigger.cancel();
     }
 
     private void syncRefresherState(int tab) {
@@ -159,26 +165,11 @@ public class UserActivity extends RxAppCompatActivity implements
             Glide.with(this).load(profile.profilePicUrl)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .bitmapTransform(new CropCircleTransformation(this))
-                    .listener(this)
+                    .listener(transitionTrigger)
                     .into(binding.avatar);
         }
 
         user = profile;
-    }
-
-    @Override
-    public boolean onException(Exception e, String model, Target<GlideDrawable> target,
-                               boolean isFirstResource) {
-        supportStartPostponedEnterTransition();
-        return false;
-    }
-
-    @Override
-    public boolean onResourceReady(GlideDrawable resource, String model,
-                                   Target<GlideDrawable> target, boolean isFromMemoryCache,
-                                   boolean isFirstResource) {
-        supportStartPostponedEnterTransition();
-        return false;
     }
 
     @OnClick(R.id.followers_container)

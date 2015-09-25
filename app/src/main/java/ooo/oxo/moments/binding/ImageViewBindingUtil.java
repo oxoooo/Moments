@@ -27,20 +27,19 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import jp.wasabeef.glide.transformations.CropCircleTransformation;
 import ooo.oxo.moments.model.Media;
 
+@SuppressWarnings("unused")
 public class ImageViewBindingUtil {
 
     @BindingAdapter("bind:images")
     public static void loadImageCandidates(ImageView view, Media.ImageCandidates candidates) {
-        Glide.with(view.getContext())
-                .load(candidates)
+        Glide.with(view.getContext()).load(candidates)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(view);
     }
 
     @BindingAdapter("bind:roundImage")
     public static void loadRoundImage(ImageView view, String url) {
-        Glide.with(view.getContext())
-                .load(url)
+        Glide.with(view.getContext()).load(url)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .bitmapTransform(new CropCircleTransformation(view.getContext()))
                 .into(view);

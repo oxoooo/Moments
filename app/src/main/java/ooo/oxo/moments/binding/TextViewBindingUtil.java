@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import java.util.Date;
 
+@SuppressWarnings("unused")
 public class TextViewBindingUtil {
 
     @BindingAdapter("bind:relativeDateTime")

@@ -97,7 +97,7 @@ public class FeedAdapter extends ArrayRecyclerAdapter<Media, FeedAdapter.ViewHol
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        FeedItemBinding binding;
+        public FeedItemBinding binding;
 
         public ViewHolder(FeedItemBinding binding) {
             super(binding.getRoot());

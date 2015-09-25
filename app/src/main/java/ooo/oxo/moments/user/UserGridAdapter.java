@@ -55,7 +55,7 @@ public class UserGridAdapter extends ArrayRecyclerAdapter<Media, UserGridAdapter
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        UserGridItemBinding binding;
+        public UserGridItemBinding binding;
 
         public ViewHolder(UserGridItemBinding binding) {
             super(binding.getRoot());

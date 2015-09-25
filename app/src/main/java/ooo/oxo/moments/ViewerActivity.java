@@ -30,11 +30,14 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import it.sephiroth.android.library.imagezoom.ImageViewTouchBase;
+import ooo.oxo.moments.util.PostponedTransitionTrigger;
 
 public class ViewerActivity extends AppCompatActivity {
 
     @Bind(R.id.image)
     ImageViewTouch image;
+
+    private PostponedTransitionTrigger transitionTrigger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,17 +47,30 @@ public class ViewerActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-        image.setDisplayType(ImageViewTouchBase.DisplayType.FIT_TO_SCREEN);
+        supportPostponeEnterTransition();
 
-        Glide.with(this)
-                .load(getIntent().getDataString())
+        String url = getIntent().getDataString();
+
+        image.setDisplayType(ImageViewTouchBase.DisplayType.FIT_TO_SCREEN);
+        image.setTransitionName(url);
+
+        transitionTrigger = new PostponedTransitionTrigger(this);
+
+        Glide.with(this).load(url)
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .listener(transitionTrigger)
                 .into(new GlideDrawableImageViewTarget(image) {
                     @Override
                     public void getSize(SizeReadyCallback cb) {
                         cb.onSizeReady(SIZE_ORIGINAL, SIZE_ORIGINAL);
                     }
                 });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        transitionTrigger.cancel();
     }
 
 }

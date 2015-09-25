@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -169,7 +170,10 @@ public class UserStreamFragment extends RxFragment implements
         Intent intent = new Intent(getContext(), ViewerActivity.class);
         intent.setData(Uri.parse(best.url));
 
-        startActivity(intent);
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                getActivity(), holder.binding.image, best.url);
+
+        getActivity().startActivity(intent, options.toBundle());
     }
 
     @Override
