@@ -82,6 +82,8 @@ public class Media {
 
         public List<Resource> candidates;
 
+        public Resource picked;
+
     }
 
     public class Resource {

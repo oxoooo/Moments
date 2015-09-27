@@ -78,6 +78,8 @@ public class ImageCandidatesLoader extends BaseGlideUrlLoader<Media.ImageCandida
             }
         }
 
+        model.picked = best;
+
         return best == null ? null : best.url;
     }
 

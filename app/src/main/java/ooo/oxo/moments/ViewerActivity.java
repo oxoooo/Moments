@@ -19,24 +19,24 @@
 package ooo.oxo.moments;
 
 import android.os.Bundle;
-import android.support.v4.app.SharedElementCallback;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.transition.Transition;
 import android.view.View;
 import android.widget.TextView;
 
+import com.bumptech.glide.DrawableRequestBuilder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
-
-import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import it.sephiroth.android.library.imagezoom.ImageViewTouchBase;
 import ooo.oxo.moments.util.PostponedTransitionTrigger;
+import ooo.oxo.moments.util.SimpleTransitionListener;
 
 public class ViewerActivity extends AppCompatActivity {
 
@@ -98,20 +98,27 @@ public class ViewerActivity extends AppCompatActivity {
 
         transitionTrigger = new PostponedTransitionTrigger(this);
 
-        Glide.with(this).load(url)
+        DrawableRequestBuilder<String> request = Glide.with(this).load(url)
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .listener(transitionTrigger)
-                .into(new GlideDrawableImageViewTarget(image) {
-                    @Override
-                    public void getSize(SizeReadyCallback cb) {
-                        cb.onSizeReady(SIZE_ORIGINAL, SIZE_ORIGINAL);
-                    }
-                });
+                .listener(transitionTrigger);
 
-        setEnterSharedElementCallback(new SharedElementCallback() {
+        if (getIntent().hasExtra("thumbnail")) {
+            request.thumbnail(Glide.with(this)
+                    .load(getIntent().getStringExtra("thumbnail"))
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE));
+        }
+
+        request.into(new GlideDrawableImageViewTarget(image) {
             @Override
-            public void onSharedElementEnd(List<String> sharedElementNames, List<View> sharedElements, List<View> sharedElementSnapshots) {
-                setEnterSharedElementCallback((SharedElementCallback) null);
+            public void getSize(SizeReadyCallback cb) {
+                cb.onSizeReady(SIZE_ORIGINAL, SIZE_ORIGINAL);
+            }
+        });
+
+        getWindow().getEnterTransition().addListener(new SimpleTransitionListener() {
+            @Override
+            public void onTransitionEnd(Transition transition) {
+                getWindow().getEnterTransition().removeListener(this);
                 fadeIn();
             }
         });

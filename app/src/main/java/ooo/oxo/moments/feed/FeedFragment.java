@@ -174,6 +174,10 @@ public class FeedFragment extends RxFragment implements
         Intent intent = new Intent(getContext(), ViewerActivity.class);
         intent.setData(Uri.parse(best.url));
 
+        if (item.imageVersions.picked != null) {
+            intent.putExtra("thumbnail", item.imageVersions.picked.url);
+        }
+
         if (item.caption != null) {
             intent.putExtra("caption", item.caption.text);
         }
