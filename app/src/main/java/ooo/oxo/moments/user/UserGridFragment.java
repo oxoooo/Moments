@@ -156,6 +156,10 @@ public class UserGridFragment extends RxFragment implements
         Intent intent = new Intent(getContext(), ViewerActivity.class);
         intent.setData(Uri.parse(best.url));
 
+        if (item.caption != null) {
+            intent.putExtra("caption", item.caption.text);
+        }
+
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                 getActivity(), holder.binding.image, best.url);
 

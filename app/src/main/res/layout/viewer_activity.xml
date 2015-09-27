@@ -16,7 +16,64 @@
   ~ along with this program;  if not, see <http://www.gnu.org/licenses/>.
   -->
 
-<it.sephiroth.android.library.imagezoom.ImageViewTouch xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/image"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+    android:layout_height="match_parent">
+
+    <it.sephiroth.android.library.imagezoom.ImageViewTouch
+        android:id="@+id/image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:background="#333" />
+
+    <FrameLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="113dp"
+        android:layout_gravity="top"
+        android:alpha="0"
+        android:background="@drawable/viewer_header"
+        tools:alpha="1" />
+
+    <FrameLayout
+        android:id="@+id/footer"
+        android:layout_width="match_parent"
+        android:layout_height="176dp"
+        android:layout_gravity="bottom"
+        android:alpha="0"
+        android:background="@drawable/viewer_footer"
+        tools:alpha="1" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        tools:layout_marginBottom="48dp"
+        tools:layout_marginTop="25dp">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:alpha="0"
+            android:paddingBottom="32dp"
+            app:navigationIcon="@drawable/ic_arrow_back_white_24dp"
+            tools:alpha="1" />
+
+        <TextView
+            android:id="@+id/caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:alpha="0"
+            android:fitsSystemWindows="true"
+            android:padding="16dp"
+            tools:alpha="1"
+            tools:text="我是文字" />
+
+    </FrameLayout>
+
+</FrameLayout>

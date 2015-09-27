@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -148,7 +149,14 @@ public class UserTaggedFragment extends RxFragment implements
         Intent intent = new Intent(getContext(), ViewerActivity.class);
         intent.setData(Uri.parse(best.url));
 
-        startActivity(intent);
+        if (item.caption != null) {
+            intent.putExtra("caption", item.caption.text);
+        }
+
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                getActivity(), holder.binding.image, best.url);
+
+        getActivity().startActivity(intent, options.toBundle());
     }
 
 }
