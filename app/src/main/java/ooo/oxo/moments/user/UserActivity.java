@@ -113,8 +113,6 @@ public class UserActivity extends RxAppCompatActivity {
         if (user != null) {
             supportPostponeEnterTransition();
             ViewCompat.setTransitionName(binding.avatar, fromPostId + "_avatar");
-            ViewCompat.setTransitionName(binding.userName, fromPostId + "_user_name");
-            ViewCompat.setTransitionName(binding.fullName, fromPostId + "_full_name");
             transitionTrigger = new PostponedTransitionTrigger(this);
             populateProfile(user);
         }

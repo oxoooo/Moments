@@ -65,7 +65,6 @@
                 android:layout_height="wrap_content"
                 app:layout_scrollFlags="scroll|enterAlways"
                 app:navigationIcon="@drawable/ic_menu_white_24dp"
-                app:popupTheme="@style/AppTheme.PopupOverlay"
                 app:title="@string/navigation_explore" />
 
         </android.support.design.widget.AppBarLayout>
