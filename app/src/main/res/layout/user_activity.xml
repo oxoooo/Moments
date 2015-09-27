@@ -86,9 +86,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_toEndOf="@+id/avatar"
-                            android:gravity="center_horizontal|bottom"
+                            android:baselineAligned="false"
+                            android:gravity="center_horizontal"
                             android:orientation="horizontal"
-                            android:visibility="@{user.mediaCount == -1 ? View.INVISIBLE : View.VISIBLE}"
                             tools:visibility="visible">
 
                             <LinearLayout
@@ -105,7 +105,7 @@
                                     android:layout_height="wrap_content"
                                     android:fontFamily="sans-serif-thin"
                                     android:singleLine="true"
-                                    android:text="@{String.valueOf(user.mediaCount)}"
+                                    android:text="@{user.mediaCount == -1 ? `--` : String.valueOf(user.mediaCount)}"
                                     android:textColor="?android:textColorSecondary"
                                     android:textSize="26sp"
                                     tools:text="1142" />
@@ -135,7 +135,7 @@
                                     android:layout_height="wrap_content"
                                     android:fontFamily="sans-serif-thin"
                                     android:singleLine="true"
-                                    android:text="@{String.valueOf(user.followerCount)}"
+                                    android:text="@{user.followerCount == -1 ? `--` : String.valueOf(user.followerCount)}"
                                     android:textColor="?android:textColorSecondary"
                                     android:textSize="26sp"
                                     tools:text="142000" />
@@ -165,7 +165,7 @@
                                     android:layout_height="wrap_content"
                                     android:fontFamily="sans-serif-thin"
                                     android:singleLine="true"
-                                    android:text="@{String.valueOf(user.followingCount)}"
+                                    android:text="@{user.followingCount == -1 ? `--` : String.valueOf(user.followingCount)}"
                                     android:textColor="?android:textColorSecondary"
                                     android:textSize="26sp"
                                     tools:text="34" />
