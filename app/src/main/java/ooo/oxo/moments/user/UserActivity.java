@@ -214,13 +214,13 @@ public class UserActivity extends RxAppCompatActivity {
         public int getPageIcon(int position) {
             switch (position) {
                 case 0:
-                    return R.drawable.ic_view_module_white_24dp;
+                    return R.drawable.ic_view_module_24dp;
                 case 1:
-                    return R.drawable.ic_view_stream_white_24dp;
+                    return R.drawable.ic_view_stream_24dp;
                 case 2:
-                    return R.drawable.ic_map_white_24dp;
+                    return R.drawable.ic_user_places_24dp;
                 case 3:
-                    return R.drawable.ic_person_pin_white_24dp;
+                    return R.drawable.ic_user_tagged_24dp;
                 default:
                     return 0;
             }

@@ -64,7 +64,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_scrollFlags="scroll|enterAlways"
-                app:navigationIcon="@drawable/ic_menu_white_24dp"
+                app:navigationIcon="@drawable/ic_menu_24dp"
                 app:title="@string/app_name" />
 
         </android.support.design.widget.AppBarLayout>

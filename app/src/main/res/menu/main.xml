@@ -24,17 +24,17 @@
 
         <item
             android:id="@+id/home"
-            android:icon="@drawable/ic_home_white_24dp"
+            android:icon="@drawable/ic_home_24dp"
             android:title="@string/navigation_home" />
 
         <item
             android:id="@+id/explore"
-            android:icon="@drawable/ic_explore_white_24dp"
+            android:icon="@drawable/ic_explore_24dp"
             android:title="@string/navigation_explore" />
 
         <item
             android:id="@+id/inbox"
-            android:icon="@drawable/ic_inbox_white_24dp"
+            android:icon="@drawable/ic_inbox_24dp"
             android:title="@string/navigation_inbox" />
 
     </group>
@@ -43,7 +43,7 @@
 
         <item
             android:id="@+id/proxy"
-            android:icon="@drawable/ic_settings_white_24dp"
+            android:icon="@drawable/ic_settings_24dp"
             android:title="@string/proxy" />
 
     </group>
