@@ -25,6 +25,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.List;
+
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ooo.oxo.moments.R;
@@ -32,15 +34,17 @@ import ooo.oxo.moments.databinding.FeedItemBinding;
 import ooo.oxo.moments.model.Comment;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.text.CommentTextUtils;
-import ooo.oxo.moments.widget.ArrayRecyclerAdapter;
+import ooo.oxo.moments.widget.RecyclerViewBindingHolder;
 
-public class FeedAdapter extends ArrayRecyclerAdapter<Media, FeedAdapter.ViewHolder> {
+public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     private final LayoutInflater inflater;
+    private final List<Media> feed;
     private final FeedListener listener;
 
-    public FeedAdapter(Context context, FeedListener listener) {
+    public FeedAdapter(Context context, List<Media> feed, FeedListener listener) {
         this.inflater = LayoutInflater.from(context);
+        this.feed = feed;
         this.listener = listener;
     }
 
@@ -51,7 +55,7 @@ public class FeedAdapter extends ArrayRecyclerAdapter<Media, FeedAdapter.ViewHol
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Media item = get(position);
+        Media item = feed.get(position);
 
         // TODO: consider caching for smoother scrolling
         SpannableStringBuilder comments = new SpannableStringBuilder();
@@ -79,6 +83,11 @@ public class FeedAdapter extends ArrayRecyclerAdapter<Media, FeedAdapter.ViewHol
         holder.binding.image.setOriginalSize(item.originalWidth, item.originalHeight);
     }
 
+    @Override
+    public int getItemCount() {
+        return feed.size();
+    }
+
     public interface FeedListener {
 
         void onUserClick(ViewHolder holder);
@@ -95,13 +104,10 @@ public class FeedAdapter extends ArrayRecyclerAdapter<Media, FeedAdapter.ViewHol
 
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-
-        public FeedItemBinding binding;
+    public class ViewHolder extends RecyclerViewBindingHolder<FeedItemBinding> {
 
         public ViewHolder(FeedItemBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
+            super(binding);
             ButterKnife.bind(this, itemView);
         }
 

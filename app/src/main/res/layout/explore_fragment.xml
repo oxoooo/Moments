@@ -16,68 +16,81 @@
   ~ along with this program;  if not, see <http://www.gnu.org/licenses/>.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <android.support.design.widget.CoordinatorLayout
+    <data>
+
+        <variable
+            name="feed"
+            type="android.databinding.ObservableArrayList" />
+
+    </data>
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Fuck you Google -->
-        <View
+        <android.support.design.widget.CoordinatorLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
-            android:visibility="invisible" />
+            android:layout_height="match_parent">
 
-        <android.support.v4.widget.SwipeRefreshLayout
-            android:id="@+id/refresher"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/content"
+            <!-- Fuck you Google -->
+            <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:padding="@dimen/item_margin_grid" />
+                android:fitsSystemWindows="true"
+                android:visibility="invisible" />
 
-        </android.support.v4.widget.SwipeRefreshLayout>
+            <android.support.v4.widget.SwipeRefreshLayout
+                android:id="@+id/refresher"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar"
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/content"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:padding="@dimen/item_margin_grid"
+                    app:data="@{feed}" />
+
+            </android.support.v4.widget.SwipeRefreshLayout>
+
+            <android.support.design.widget.AppBarLayout
+                android:id="@+id/appbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:theme="@style/AppTheme.AppBarOverlay">
+
+                <ooo.oxo.moments.widget.StatusBarHolderView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_scrollFlags="scroll|enterAlways" />
+
+                <android.support.v7.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_scrollFlags="scroll|enterAlways"
+                    app:navigationIcon="@drawable/ic_menu_24dp"
+                    app:title="@string/navigation_explore" />
+
+            </android.support.design.widget.AppBarLayout>
+
+        </android.support.design.widget.CoordinatorLayout>
+
+        <ooo.oxo.moments.widget.StatusBarHolderView
+            android:id="@+id/status_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:theme="@style/AppTheme.AppBarOverlay">
+            android:layout_height="match_parent"
+            android:alpha="0.0"
+            android:background="@android:color/black"
+            tools:alpha="1.0"
+            tools:background="@android:color/holo_red_light" />
 
-            <ooo.oxo.moments.widget.StatusBarHolderView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_scrollFlags="scroll|enterAlways" />
+    </FrameLayout>
 
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_scrollFlags="scroll|enterAlways"
-                app:navigationIcon="@drawable/ic_menu_24dp"
-                app:title="@string/navigation_explore" />
-
-        </android.support.design.widget.AppBarLayout>
-
-    </android.support.design.widget.CoordinatorLayout>
-
-    <ooo.oxo.moments.widget.StatusBarHolderView
-        android:id="@+id/status_bar"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0.0"
-        android:background="@android:color/black"
-        tools:alpha="1.0"
-        tools:background="@android:color/holo_red_light" />
-
-</FrameLayout>
+</layout>

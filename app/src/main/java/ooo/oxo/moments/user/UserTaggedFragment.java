@@ -19,13 +19,12 @@
 package ooo.oxo.moments.user;
 
 import android.content.Intent;
+import android.databinding.ObservableArrayList;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,14 +34,13 @@ import com.trello.rxlifecycle.components.support.RxFragment;
 
 import java.util.List;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.ViewerActivity;
 import ooo.oxo.moments.api.FeedApi;
+import ooo.oxo.moments.databinding.UserGridFragmentBinding;
 import ooo.oxo.moments.model.Media;
-import ooo.oxo.moments.rx.RxArrayRecyclerAdapter;
+import ooo.oxo.moments.rx.RxList;
 import ooo.oxo.moments.util.ImageCandidatesUtil;
 import pocketknife.BindArgument;
 import pocketknife.PocketKnife;
@@ -55,18 +53,14 @@ public class UserTaggedFragment extends RxFragment implements
 
     private static final String TAG = "UserGridFragment";
 
-    @Bind(R.id.refresher)
-    SwipeRefreshLayout refresher;
-
-    @Bind(R.id.content)
-    RecyclerView content;
+    private final ObservableArrayList<Media> feed = new ObservableArrayList<>();
 
     @BindArgument("id")
     long id;
 
-    private FeedApi feedApi;
+    private UserGridFragmentBinding binding;
 
-    private UserGridAdapter adapter;
+    private FeedApi feedApi;
 
     public static UserTaggedFragment newFragment(long id) {
         Bundle arguments = new Bundle();
@@ -82,48 +76,49 @@ public class UserTaggedFragment extends RxFragment implements
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         feedApi = InstaApplication.from(getContext()).createApi(FeedApi.class);
-        adapter = new UserGridAdapter(getContext(), this);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.user_grid_fragment, container, false);
+        binding = UserGridFragmentBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        ButterKnife.bind(this, view);
         PocketKnife.bindArguments(this);
 
-        refresher.setColorSchemeResources(R.color.primary);
+        binding.refresher.setColorSchemeResources(R.color.primary);
 
-        content.setLayoutManager(new GridLayoutManager(getContext(), 3));
-        content.setAdapter(adapter);
+        binding.content.setLayoutManager(new GridLayoutManager(getContext(), 3));
+        binding.content.setAdapter(new UserGridAdapter(getContext(), feed, this));
 
-        RxSwipeRefreshLayout.refreshes(refresher)
+        binding.setFeed(feed);
+
+        RxSwipeRefreshLayout.refreshes(binding.refresher)
                 .compose(bindToLifecycle())
                 .flatMap(avoid -> load(null))
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter), this::showError);
+                .subscribe(RxList.replace(feed), this::showError);
 
         load(null)
                 .compose(bindToLifecycle())
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter), this::showError);
+                .subscribe(RxList.replace(feed), this::showError);
 
-        refresher.post(() -> refresher.setRefreshing(true));
+        binding.refresher.post(() -> binding.refresher.setRefreshing(true));
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        adapter.clear();
+        feed.clear();
     }
 
     private Observable<List<Media>> load(String maxId) {
         return feedApi.tagged(id, maxId)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(() -> refresher.setRefreshing(true))
-                .doOnCompleted(() -> refresher.setRefreshing(false))
+                .doOnSubscribe(() -> binding.refresher.setRefreshing(true))
+                .doOnCompleted(() -> binding.refresher.setRefreshing(false))
                 .filter(envelope -> envelope.items != null)
                 .map(envelope -> envelope.items);
     }
@@ -134,12 +129,12 @@ public class UserTaggedFragment extends RxFragment implements
 
     @Override
     public void setCanRefresh(boolean canRefresh) {
-        refresher.setEnabled(canRefresh);
+        binding.refresher.setEnabled(canRefresh);
     }
 
     @Override
     public void onImageClick(UserGridAdapter.ViewHolder holder) {
-        Media item = adapter.get(holder.getAdapterPosition());
+        Media item = feed.get(holder.getAdapterPosition());
         Media.Resource best = ImageCandidatesUtil.pickBest(item.imageVersions.candidates);
 
         if (best == null) {

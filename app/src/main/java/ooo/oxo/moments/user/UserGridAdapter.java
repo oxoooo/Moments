@@ -23,17 +23,21 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import java.util.List;
+
 import ooo.oxo.moments.databinding.UserGridItemBinding;
 import ooo.oxo.moments.model.Media;
-import ooo.oxo.moments.widget.ArrayRecyclerAdapter;
+import ooo.oxo.moments.widget.RecyclerViewBindingHolder;
 
-public class UserGridAdapter extends ArrayRecyclerAdapter<Media, UserGridAdapter.ViewHolder> {
+public class UserGridAdapter extends RecyclerView.Adapter<UserGridAdapter.ViewHolder> {
 
     private final LayoutInflater inflater;
+    private final List<Media> feed;
     private final GridListener listener;
 
-    public UserGridAdapter(Context context, GridListener listener) {
+    public UserGridAdapter(Context context, List<Media> feed, GridListener listener) {
         this.inflater = LayoutInflater.from(context);
+        this.feed = feed;
         this.listener = listener;
     }
 
@@ -44,7 +48,12 @@ public class UserGridAdapter extends ArrayRecyclerAdapter<Media, UserGridAdapter
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.binding.setItem(get(position));
+        holder.binding.setItem(feed.get(position));
+    }
+
+    @Override
+    public int getItemCount() {
+        return feed.size();
     }
 
     public interface GridListener {
@@ -53,13 +62,10 @@ public class UserGridAdapter extends ArrayRecyclerAdapter<Media, UserGridAdapter
 
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-
-        public UserGridItemBinding binding;
+    public class ViewHolder extends RecyclerViewBindingHolder<UserGridItemBinding> {
 
         public ViewHolder(UserGridItemBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
+            super(binding);
             itemView.setOnClickListener(v -> listener.onImageClick(this));
         }
 

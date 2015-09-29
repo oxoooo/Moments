@@ -20,6 +20,7 @@ package ooo.oxo.moments.user;
 
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -41,6 +42,7 @@ import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.UserApi;
 import ooo.oxo.moments.databinding.UserActivityBinding;
 import ooo.oxo.moments.friendship.FriendshipActivity;
+import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.model.User;
 import ooo.oxo.moments.util.PostponedTransitionTrigger;
 import ooo.oxo.moments.widget.IconifiedPagerAdapter;
@@ -53,6 +55,8 @@ import rx.android.schedulers.AndroidSchedulers;
 public class UserActivity extends RxAppCompatActivity {
 
     private static final String TAG = "UserActivity";
+
+    final ObservableArrayList<Media> feed = new ObservableArrayList<>();
 
     @BindExtra("id")
     @NotRequired
@@ -134,6 +138,7 @@ public class UserActivity extends RxAppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         transitionTrigger.cancel();
+        feed.clear();
     }
 
     private void syncRefresherState(int tab) {

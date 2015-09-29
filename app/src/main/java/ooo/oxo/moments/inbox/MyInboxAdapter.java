@@ -21,58 +21,43 @@ package ooo.oxo.moments.inbox;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
-import java.util.Locale;
+import java.util.List;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import ooo.oxo.moments.R;
+import ooo.oxo.moments.databinding.InboxNewsItemBinding;
 import ooo.oxo.moments.model.Story;
-import ooo.oxo.moments.binding.ImageViewBindingUtil;
-import ooo.oxo.moments.widget.ArrayRecyclerAdapter;
+import ooo.oxo.moments.widget.RecyclerViewBindingHolder;
 
-public class MyInboxAdapter extends ArrayRecyclerAdapter<Story, MyInboxAdapter.ViewHolder> {
-
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
+public class MyInboxAdapter extends RecyclerView.Adapter<MyInboxAdapter.ViewHolder> {
 
     private final LayoutInflater inflater;
+    private final List<Story> inbox;
 
-    public MyInboxAdapter(Context context) {
+    public MyInboxAdapter(Context context, List<Story> inbox) {
         this.inflater = LayoutInflater.from(context);
+        this.inbox = inbox;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(inflater.inflate(R.layout.inbox_news_item, parent, false));
+        return new ViewHolder(InboxNewsItemBinding.inflate(inflater, parent, false));
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Story item = get(position);
-        ImageViewBindingUtil.loadRoundImage(holder.avatar, item.args.profileImage);
-        holder.text.setText(item.args.text);
-        holder.time.setText(DATE_FORMAT.format(item.args.timestamp));
+        holder.binding.setStory(inbox.get(position));
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    @Override
+    public int getItemCount() {
+        return inbox.size();
+    }
 
-        @Bind(R.id.avatar)
-        ImageView avatar;
+    public class ViewHolder extends RecyclerViewBindingHolder<InboxNewsItemBinding> {
 
-        @Bind(R.id.text)
-        TextView text;
-
-        @Bind(R.id.time)
-        TextView time;
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
+        public ViewHolder(InboxNewsItemBinding binding) {
+            super(binding);
         }
 
     }

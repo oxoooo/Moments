@@ -19,15 +19,12 @@
 package ooo.oxo.moments.explore;
 
 import android.content.Intent;
+import android.databinding.ObservableArrayList;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,16 +35,16 @@ import com.trello.rxlifecycle.components.support.RxFragment;
 
 import java.util.List;
 
-import butterknife.Bind;
 import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.MainActivity;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.ViewerActivity;
 import ooo.oxo.moments.api.FeedApi;
+import ooo.oxo.moments.databinding.ExploreFragmentBinding;
 import ooo.oxo.moments.model.Media;
-import ooo.oxo.moments.rx.RxArrayRecyclerAdapter;
 import ooo.oxo.moments.rx.RxEndlessRecyclerView;
+import ooo.oxo.moments.rx.RxList;
 import ooo.oxo.moments.user.UserGridAdapter;
 import ooo.oxo.moments.util.ImageCandidatesUtil;
 import rx.Observable;
@@ -58,81 +55,70 @@ public class ExploreFragment extends RxFragment implements
 
     private static final String TAG = "ExploreFragment";
 
-    @Bind(R.id.appbar)
-    AppBarLayout appbar;
+    private final ObservableArrayList<Media> feed = new ObservableArrayList<>();
 
-    @Bind(R.id.toolbar)
-    Toolbar toolbar;
-
-    @Bind(R.id.status_bar)
-    View statusBar;
-
-    @Bind(R.id.refresher)
-    SwipeRefreshLayout refresher;
-
-    @Bind(R.id.content)
-    RecyclerView content;
+    private ExploreFragmentBinding binding;
 
     private FeedApi feedApi;
-
-    private UserGridAdapter adapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         feedApi = InstaApplication.from(getContext()).createApi(FeedApi.class);
-        adapter = new UserGridAdapter(getContext(), this);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.explore_fragment, container, false);
+        binding = ExploreFragmentBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         ButterKnife.bind(this, view);
 
-        appbar.addOnOffsetChangedListener((v, i) -> statusBar.setAlpha(Math.min(
-                1, (float) -i / (float) (appbar.getHeight() - statusBar.getHeight()))));
+        binding.appbar.addOnOffsetChangedListener((v, i) -> binding.statusBar.setAlpha(Math.min(
+                1, (float) -i / (float) (binding.appbar.getHeight() - binding.statusBar.getHeight()))));
 
-        toolbar.setNavigationOnClickListener(v -> ((MainActivity) getActivity()).openNavigation());
+        binding.toolbar.setNavigationOnClickListener(v -> ((MainActivity) getActivity()).openNavigation());
 
-        refresher.setColorSchemeResources(R.color.primary);
+        binding.refresher.setColorSchemeResources(R.color.primary);
 
-        content.setLayoutManager(new GridLayoutManager(getContext(), 3));
-        content.setAdapter(adapter);
+        binding.content.setLayoutManager(new GridLayoutManager(getContext(), 3));
+        binding.content.setAdapter(new UserGridAdapter(getContext(), feed, this));
 
-        RxEndlessRecyclerView.reachesEnd(content)
+        binding.setFeed(feed);
+
+        RxEndlessRecyclerView.reachesEnd(binding.content)
                 .compose(bindToLifecycle())
-                .map(adapter::get)
+                .map(feed::get)
                 .flatMap(last -> load(last.id))
-                .subscribe(RxArrayRecyclerAdapter.appendTo(adapter), this::showError);
+                .subscribe(RxList.appendTo(feed), this::showError);
 
-        RxSwipeRefreshLayout.refreshes(refresher)
+        RxSwipeRefreshLayout.refreshes(binding.refresher)
                 .compose(bindToLifecycle())
                 .flatMap(avoid -> load(null))
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter), this::showError);
+                .subscribe(RxList.replace(feed), this::showError);
 
         load(null)
                 .compose(bindToLifecycle())
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter), this::showError);
+                .subscribe(RxList.replace(feed), this::showError);
 
-        refresher.post(() -> refresher.setRefreshing(true));
+        binding.refresher.post(() -> binding.refresher.setRefreshing(true));
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        adapter.clear();
+        feed.clear();
     }
 
     private Observable<List<Media>> load(String maxId) {
         return feedApi.popular(maxId)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(() -> refresher.setRefreshing(true))
-                .doOnCompleted(() -> refresher.setRefreshing(false))
+                .doOnSubscribe(() -> binding.refresher.setRefreshing(true))
+                .doOnCompleted(() -> binding.refresher.setRefreshing(false))
                 .filter(envelope -> envelope.items != null)
                 .map(envelope -> envelope.items);
     }
@@ -143,7 +129,7 @@ public class ExploreFragment extends RxFragment implements
 
     @Override
     public void onImageClick(UserGridAdapter.ViewHolder holder) {
-        Media item = adapter.get(holder.getAdapterPosition());
+        Media item = feed.get(holder.getAdapterPosition());
         Media.Resource best = ImageCandidatesUtil.pickBest(item.imageVersions.candidates);
 
         if (best == null) {

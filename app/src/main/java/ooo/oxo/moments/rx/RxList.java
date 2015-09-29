@@ -20,17 +20,23 @@ package ooo.oxo.moments.rx;
 
 import java.util.List;
 
-import ooo.oxo.moments.widget.ArrayRecyclerAdapter;
 import rx.functions.Action1;
 
-public class RxArrayRecyclerAdapter {
+public class RxList {
 
-    public static <E> Action1<List<E>> appendTo(ArrayRecyclerAdapter<E, ?> adapter) {
-        return adapter::addAll;
+    public static <E> Action1<List<E>> appendTo(List<E> list) {
+        return list::addAll;
     }
 
-    public static <E> Action1<List<E>> replace(ArrayRecyclerAdapter<E, ?> adapter) {
-        return adapter::replaceWith;
+    public static <E> Action1<List<E>> prependTo(List<E> list) {
+        return items -> list.addAll(0, items);
+    }
+
+    public static <E> Action1<List<E>> replace(List<E> list) {
+        return items -> {
+            list.clear();
+            list.addAll(items);
+        };
     }
 
 }

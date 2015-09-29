@@ -18,11 +18,10 @@
 
 package ooo.oxo.moments.inbox;
 
+import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,68 +32,66 @@ import com.trello.rxlifecycle.components.support.RxFragment;
 
 import java.util.List;
 
-import butterknife.Bind;
 import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.NewsApi;
+import ooo.oxo.moments.databinding.InboxNewsFragmentBinding;
 import ooo.oxo.moments.model.Story;
-import ooo.oxo.moments.rx.RxArrayRecyclerAdapter;
+import ooo.oxo.moments.rx.RxList;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class NewsInboxFragment extends RxFragment {
 
-    @Bind(R.id.refresher)
-    SwipeRefreshLayout refresher;
+    private final ObservableArrayList<Story> inbox = new ObservableArrayList<>();
 
-    @Bind(R.id.content)
-    RecyclerView content;
+    private InboxNewsFragmentBinding binding;
 
     private NewsApi newsApi;
-
-    private NewsInboxAdapter adapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         newsApi = InstaApplication.from(getContext()).createApi(NewsApi.class);
-        adapter = new NewsInboxAdapter(getContext());
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.inbox_news_fragment, container, false);
+        binding = InboxNewsFragmentBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         ButterKnife.bind(this, view);
 
-        content.setLayoutManager(new LinearLayoutManager(getContext()));
-        content.setAdapter(adapter);
+        binding.content.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.content.setAdapter(new NewsInboxAdapter(getContext(), inbox));
 
-        RxSwipeRefreshLayout.refreshes(refresher)
+        binding.setInbox(inbox);
+
+        RxSwipeRefreshLayout.refreshes(binding.refresher)
                 .compose(bindToLifecycle())
                 .flatMap(avoid -> load())
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter), this::showError);
+                .subscribe(RxList.replace(inbox), this::showError);
 
         load().compose(bindToLifecycle())
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter), this::showError);
+                .subscribe(RxList.replace(inbox), this::showError);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        adapter.clear();
+        inbox.clear();
     }
 
     private Observable<List<Story>> load() {
         return newsApi.news()
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(() -> refresher.setRefreshing(true))
-                .doOnCompleted(() -> refresher.setRefreshing(false))
+                .doOnSubscribe(() -> binding.refresher.setRefreshing(true))
+                .doOnCompleted(() -> binding.refresher.setRefreshing(false))
                 .filter(envelope -> envelope.stories != null)
                 .map(envelope -> envelope.stories);
     }

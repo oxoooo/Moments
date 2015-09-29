@@ -20,6 +20,7 @@ package ooo.oxo.moments.friendship;
 
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -35,8 +36,8 @@ import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.FriendshipApi;
 import ooo.oxo.moments.databinding.FriendshipActivityBinding;
 import ooo.oxo.moments.model.User;
-import ooo.oxo.moments.rx.RxArrayRecyclerAdapter;
 import ooo.oxo.moments.rx.RxEndlessRecyclerView;
+import ooo.oxo.moments.rx.RxList;
 import ooo.oxo.moments.user.UserActivity;
 import pocketknife.BindExtra;
 import pocketknife.NotRequired;
@@ -48,6 +49,8 @@ public class FriendshipActivity extends RxAppCompatActivity
         implements FriendshipAdapter.FriendshipListener {
 
     private static final String TAG = "FriendshipActivity";
+
+    private final ObservableArrayList<User> friends = new ObservableArrayList<>();
 
     @BindExtra("id")
     long id;
@@ -62,8 +65,6 @@ public class FriendshipActivity extends RxAppCompatActivity
     private FriendshipApi friendshipApi;
 
     private String nextMaxId;
-
-    private FriendshipAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,19 +97,19 @@ public class FriendshipActivity extends RxAppCompatActivity
 
         binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
 
-        adapter = new FriendshipAdapter(this, this);
-
         binding.content.setLayoutManager(new LinearLayoutManager(this));
-        binding.content.setAdapter(adapter);
+        binding.content.setAdapter(new FriendshipAdapter(this, friends, this));
+
+        binding.setFriends(friends);
 
         RxEndlessRecyclerView.reachesEnd(binding.content)
                 .compose(bindToLifecycle())
                 .filter(avoid -> nextMaxId != null)
                 .flatMap(avoid -> load(nextMaxId))
-                .subscribe(RxArrayRecyclerAdapter.appendTo(adapter), this::showError);
+                .subscribe(RxList.appendTo(friends), this::showError);
 
         load(null).compose(bindToLifecycle())
-                .subscribe(RxArrayRecyclerAdapter.replace(adapter), this::showError);
+                .subscribe(RxList.replace(friends), this::showError);
     }
 
     private Observable<FriendshipApi.UsersEnvelope> createObservable(String maxId) {
@@ -138,7 +139,7 @@ public class FriendshipActivity extends RxAppCompatActivity
 
     @Override
     public void openUser(FriendshipAdapter.ViewHolder holder) {
-        User item = adapter.get(holder.getAdapterPosition());
+        User item = friends.get(holder.getAdapterPosition());
 
         Intent intent = new Intent(this, UserActivity.class);
         intent.putExtra("user", item);

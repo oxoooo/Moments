@@ -16,53 +16,68 @@
   ~ along with this program;  if not, see <http://www.gnu.org/licenses/>.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:paddingTop="25dp">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <ImageView
-        android:id="@+id/avatar"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="16dp"
-        tools:ignore="ContentDescription"
-        tools:src="#999" />
+    <data>
 
-    <TextView
-        android:id="@+id/text"
+        <variable
+            name="story"
+            type="ooo.oxo.moments.model.Story" />
+
+    </data>
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/avatar"
-        android:layout_marginEnd="16dp"
-        android:layout_toEndOf="@+id/avatar"
-        android:textColor="?android:textColorPrimary"
-        tools:text="xingrz 开始关注了 admin" />
+        android:layout_height="match_parent"
+        tools:paddingTop="25dp">
 
-    <TextView
-        android:id="@+id/time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/text"
-        android:layout_alignStart="@+id/text"
-        android:layout_below="@+id/text"
-        android:textColor="?android:textColorSecondary"
-        android:textSize="12sp"
-        tools:text="3 分钟前" />
+        <ImageView
+            android:id="@+id/avatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="16dp"
+            app:roundImage="@{story.args.profileImage}"
+            tools:ignore="ContentDescription"
+            tools:src="#999" />
 
-    <LinearLayout
-        android:id="@+id/medias"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/text"
-        android:layout_alignStart="@+id/text"
-        android:layout_below="@+id/time"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal"
-        android:visibility="gone"
-        tools:background="#eee"
-        tools:layout_height="56dp"
-        tools:visibility="visible" />
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/avatar"
+            android:layout_marginEnd="16dp"
+            android:layout_toEndOf="@+id/avatar"
+            android:text="@{story.args.text}"
+            android:textColor="?android:textColorPrimary"
+            tools:text="xingrz 开始关注了 admin" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/text"
+            android:layout_alignStart="@+id/text"
+            android:layout_below="@+id/text"
+            android:textColor="?android:textColorSecondary"
+            android:textSize="12sp"
+            app:relativeDateTime="@{story.args.timestamp}" />
+
+        <LinearLayout
+            android:id="@+id/medias"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/text"
+            android:layout_alignStart="@+id/text"
+            android:layout_below="@+id/time"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            tools:background="#eee"
+            tools:layout_height="56dp"
+            tools:visibility="visible" />
+
+    </RelativeLayout>
+
+</layout>
