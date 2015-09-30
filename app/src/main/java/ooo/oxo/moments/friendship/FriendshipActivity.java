@@ -109,7 +109,7 @@ public class FriendshipActivity extends RxAppCompatActivity
                 .subscribe(RxList.appendTo(friends), this::showError);
 
         load(null).compose(bindToLifecycle())
-                .subscribe(RxList.replace(friends), this::showError);
+                .subscribe(RxList.prependToOrReplace(friends), this::showError);
     }
 
     private Observable<FriendshipApi.UsersEnvelope> createObservable(String maxId) {

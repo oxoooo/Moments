@@ -109,12 +109,12 @@ public class UserStreamFragment extends RxFragment implements
                 .compose(bindToLifecycle())
                 .flatMap(avoid -> load(null))
                 .doOnError(((UserActivity) getActivity())::showError)
-                .subscribe(RxList.replace(feed), this::showError);
+                .subscribe(RxList.prependToOrReplace(feed), this::showError);
 
         load(null)
                 .compose(bindToLifecycle())
                 .doOnError(((UserActivity) getActivity())::showError)
-                .subscribe(RxList.replace(feed), this::showError);
+                .subscribe(RxList.appendTo(feed), this::showError);
 
         binding.refresher.post(() -> binding.refresher.setRefreshing(true));
     }

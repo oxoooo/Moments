@@ -75,10 +75,10 @@ public class MyInboxFragment extends RxFragment {
         RxSwipeRefreshLayout.refreshes(binding.refresher)
                 .compose(bindToLifecycle())
                 .flatMap(avoid -> load())
-                .subscribe(RxList.replace(inbox), this::showError);
+                .subscribe(RxList.prependToOrReplace(inbox), this::showError);
 
         load().compose(bindToLifecycle())
-                .subscribe(RxList.replace(inbox), this::showError);
+                .subscribe(RxList.appendTo(inbox), this::showError);
     }
 
     @Override

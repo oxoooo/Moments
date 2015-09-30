@@ -28,12 +28,24 @@ public class RxList {
         return list::addAll;
     }
 
-    public static <E> Action1<List<E>> prependTo(List<E> list) {
-        return items -> list.addAll(0, items);
-    }
-
-    public static <E> Action1<List<E>> replace(List<E> list) {
+    public static <E> Action1<List<E>> prependToOrReplace(List<E> list) {
         return items -> {
+            if (items.isEmpty()) {
+                return;
+            }
+
+            if (list.isEmpty()) {
+                list.addAll(items);
+                return;
+            }
+
+            if (list.size() >= items.size() && list.subList(0, items.size()).equals(items)) {
+                for (int i = items.size() - 1; i >= 0; i--) {
+                    list.set(i, items.get(i));
+                }
+                return;
+            }
+
             list.clear();
             list.addAll(items);
         };

@@ -99,11 +99,11 @@ public class UserTaggedFragment extends RxFragment implements
         RxSwipeRefreshLayout.refreshes(binding.refresher)
                 .compose(bindToLifecycle())
                 .flatMap(avoid -> load(null))
-                .subscribe(RxList.replace(feed), this::showError);
+                .subscribe(RxList.prependToOrReplace(feed), this::showError);
 
         load(null)
                 .compose(bindToLifecycle())
-                .subscribe(RxList.replace(feed), this::showError);
+                .subscribe(RxList.appendTo(feed), this::showError);
 
         binding.refresher.post(() -> binding.refresher.setRefreshing(true));
     }
