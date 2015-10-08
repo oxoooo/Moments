@@ -22,11 +22,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <it.sephiroth.android.library.imagezoom.ImageViewTouch
-        android:id="@+id/image"
+    <ooo.oxo.moments.widget.PullBackLayout
+        android:id="@+id/puller"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:background="#333" />
+        android:layout_height="match_parent">
+
+        <it.sephiroth.android.library.imagezoom.ImageViewTouch
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:background="#333" />
+
+    </ooo.oxo.moments.widget.PullBackLayout>
 
     <FrameLayout
         android:id="@+id/header"

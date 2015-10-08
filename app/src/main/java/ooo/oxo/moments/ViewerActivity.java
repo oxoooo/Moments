@@ -18,6 +18,8 @@
 
 package ooo.oxo.moments;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -37,16 +39,13 @@ import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import it.sephiroth.android.library.imagezoom.ImageViewTouchBase;
 import ooo.oxo.moments.util.PostponedTransitionTrigger;
 import ooo.oxo.moments.util.SimpleTransitionListener;
+import ooo.oxo.moments.widget.ImmersiveUtil;
+import ooo.oxo.moments.widget.PullBackLayout;
 
-public class ViewerActivity extends AppCompatActivity {
+public class ViewerActivity extends AppCompatActivity implements PullBackLayout.Callback {
 
-    private static final int SYSTEM_UI_BASE_VISIBILITY = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-
-    private static final int SYSTEM_UI_IMMERSIVE = View.SYSTEM_UI_FLAG_IMMERSIVE
-            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_FULLSCREEN;
+    @Bind(R.id.puller)
+    PullBackLayout puller;
 
     @Bind(R.id.image)
     ImageViewTouch image;
@@ -65,6 +64,8 @@ public class ViewerActivity extends AppCompatActivity {
 
     private PostponedTransitionTrigger transitionTrigger;
 
+    private ColorDrawable background;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +78,8 @@ public class ViewerActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+
+        puller.setCallback(this);
 
         if (getIntent().hasExtra("caption")) {
             caption.setText(getIntent().getStringExtra("caption"));
@@ -122,6 +125,9 @@ public class ViewerActivity extends AppCompatActivity {
                 fadeIn();
             }
         });
+
+        background = new ColorDrawable(Color.BLACK);
+        getWindow().getDecorView().setBackground(background);
     }
 
     @Override
@@ -135,7 +141,7 @@ public class ViewerActivity extends AppCompatActivity {
         footer.animate().alpha(1).start();
         toolbar.animate().alpha(1).start();
         caption.animate().alpha(1).start();
-        image.setSystemUiVisibility(SYSTEM_UI_BASE_VISIBILITY);
+        showSystemUi();
     }
 
     private void fadeOut() {
@@ -143,7 +149,15 @@ public class ViewerActivity extends AppCompatActivity {
         footer.animate().alpha(0).start();
         toolbar.animate().alpha(0).start();
         caption.animate().alpha(0).start();
-        image.setSystemUiVisibility(SYSTEM_UI_BASE_VISIBILITY | SYSTEM_UI_IMMERSIVE);
+        hideSystemUi();
+    }
+
+    private void showSystemUi() {
+        ImmersiveUtil.exit(image);
+    }
+
+    private void hideSystemUi() {
+        ImmersiveUtil.enter(image);
     }
 
     private void toggleFade() {
@@ -152,6 +166,32 @@ public class ViewerActivity extends AppCompatActivity {
         } else {
             fadeOut();
         }
+    }
+
+    @Override
+    public void onPullStart() {
+        fadeOut();
+        showSystemUi();
+    }
+
+    @Override
+    public void onPull(float progress) {
+        background.setAlpha((int) (0xff * (1f - progress * 0.75f)));
+    }
+
+    @Override
+    public void onPullCancel() {
+        fadeIn();
+    }
+
+    @Override
+    public void onPullComplete() {
+        supportFinishAfterTransition();
+    }
+
+    @Override
+    public boolean canPullDown() {
+        return !image.canScroll();
     }
 
 }
