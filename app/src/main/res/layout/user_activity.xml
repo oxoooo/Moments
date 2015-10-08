@@ -218,7 +218,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="?actionBarSize"
                     app:layout_collapseMode="pin"
-                    app:navigationIcon="@drawable/ic_arrow_back_24dp"
+                    app:navigationIcon="?homeAsUpIndicator"
                     app:subtitle="@{user.fullName}"
                     app:title="@{user.username}"
                     app:titleTextAppearance="@style/ToolbarTitleTextAppearance.AllCaps" />

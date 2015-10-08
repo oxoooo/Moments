@@ -100,8 +100,6 @@ public class FriendshipActivity extends RxAppCompatActivity
         binding.content.setLayoutManager(new LinearLayoutManager(this));
         binding.content.setAdapter(new FriendshipAdapter(this, friends, this));
 
-        binding.setFriends(friends);
-
         RxEndlessRecyclerView.reachesEnd(binding.content)
                 .compose(bindToLifecycle())
                 .filter(avoid -> nextMaxId != null)

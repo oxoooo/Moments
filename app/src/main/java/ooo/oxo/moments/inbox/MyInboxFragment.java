@@ -28,25 +28,22 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
-import com.trello.rxlifecycle.components.support.RxFragment;
 
 import java.util.List;
 
-import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.api.NewsApi;
 import ooo.oxo.moments.databinding.InboxMineFragmentBinding;
 import ooo.oxo.moments.model.Story;
 import ooo.oxo.moments.rx.RxList;
+import ooo.oxo.moments.widget.RxBindingFragment;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class MyInboxFragment extends RxFragment {
+public class MyInboxFragment extends RxBindingFragment<InboxMineFragmentBinding> {
 
     private final ObservableArrayList<Story> inbox = new ObservableArrayList<>();
-
-    private InboxMineFragmentBinding binding;
 
     private NewsApi newsApi;
 
@@ -58,19 +55,16 @@ public class MyInboxFragment extends RxFragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = InboxMineFragmentBinding.inflate(inflater, container, false);
-        return binding.getRoot();
+    public InboxMineFragmentBinding onCreateBinding(LayoutInflater inflater,
+                                                    @Nullable ViewGroup container,
+                                                    @Nullable Bundle savedInstanceState) {
+        return InboxMineFragmentBinding.inflate(inflater, container, false);
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        ButterKnife.bind(this, view);
-
         binding.content.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.content.setAdapter(new MyInboxAdapter(getContext(), inbox));
-
-        binding.setInbox(inbox);
 
         RxSwipeRefreshLayout.refreshes(binding.refresher)
                 .compose(bindToLifecycle())

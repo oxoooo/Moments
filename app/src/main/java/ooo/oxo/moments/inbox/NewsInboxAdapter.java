@@ -19,24 +19,17 @@
 package ooo.oxo.moments.inbox;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
+import android.databinding.ObservableList;
 import android.view.ViewGroup;
-
-import java.util.List;
 
 import ooo.oxo.moments.databinding.InboxNewsItemBinding;
 import ooo.oxo.moments.model.Story;
-import ooo.oxo.moments.widget.RecyclerViewBindingHolder;
+import ooo.oxo.moments.widget.BindingRecyclerView;
 
-public class NewsInboxAdapter extends RecyclerView.Adapter<NewsInboxAdapter.ViewHolder> {
+public class NewsInboxAdapter extends BindingRecyclerView.ListAdapter<Story, NewsInboxAdapter.ViewHolder> {
 
-    private final LayoutInflater inflater;
-    private final List<Story> inbox;
-
-    public NewsInboxAdapter(Context context, List<Story> inbox) {
-        this.inflater = LayoutInflater.from(context);
-        this.inbox = inbox;
+    public NewsInboxAdapter(Context context, ObservableList<Story> data) {
+        super(context, data);
     }
 
     @Override
@@ -46,15 +39,10 @@ public class NewsInboxAdapter extends RecyclerView.Adapter<NewsInboxAdapter.View
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.binding.setStory(inbox.get(position));
+        holder.binding.setStory(data.get(position));
     }
 
-    @Override
-    public int getItemCount() {
-        return inbox.size();
-    }
-
-    public class ViewHolder extends RecyclerViewBindingHolder<InboxNewsItemBinding> {
+    public class ViewHolder extends BindingRecyclerView.ViewHolder<InboxNewsItemBinding> {
 
         public ViewHolder(InboxNewsItemBinding binding) {
             super(binding);

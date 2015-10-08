@@ -19,25 +19,19 @@
 package ooo.oxo.moments.friendship;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
+import android.databinding.ObservableList;
 import android.view.ViewGroup;
-
-import java.util.List;
 
 import ooo.oxo.moments.databinding.FriendshipItemBinding;
 import ooo.oxo.moments.model.User;
-import ooo.oxo.moments.widget.RecyclerViewBindingHolder;
+import ooo.oxo.moments.widget.BindingRecyclerView;
 
-public class FriendshipAdapter extends RecyclerView.Adapter<FriendshipAdapter.ViewHolder> {
+public class FriendshipAdapter extends BindingRecyclerView.ListAdapter<User, FriendshipAdapter.ViewHolder> {
 
-    private final LayoutInflater inflater;
-    private final List<User> friends;
     private final FriendshipListener listener;
 
-    public FriendshipAdapter(Context context, List<User> friends, FriendshipListener listener) {
-        this.inflater = LayoutInflater.from(context);
-        this.friends = friends;
+    public FriendshipAdapter(Context context, ObservableList<User> data, FriendshipListener listener) {
+        super(context, data);
         this.listener = listener;
     }
 
@@ -48,12 +42,7 @@ public class FriendshipAdapter extends RecyclerView.Adapter<FriendshipAdapter.Vi
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.binding.setUser(friends.get(position));
-    }
-
-    @Override
-    public int getItemCount() {
-        return friends.size();
+        holder.binding.setUser(data.get(position));
     }
 
     public interface FriendshipListener {
@@ -62,7 +51,7 @@ public class FriendshipAdapter extends RecyclerView.Adapter<FriendshipAdapter.Vi
 
     }
 
-    public class ViewHolder extends RecyclerViewBindingHolder<FriendshipItemBinding> {
+    public class ViewHolder extends BindingRecyclerView.ViewHolder<FriendshipItemBinding> {
 
         public ViewHolder(FriendshipItemBinding binding) {
             super(binding);

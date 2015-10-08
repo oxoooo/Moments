@@ -31,11 +31,9 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
-import com.trello.rxlifecycle.components.support.RxFragment;
 
 import java.util.List;
 
-import butterknife.ButterKnife;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.MainActivity;
 import ooo.oxo.moments.R;
@@ -47,17 +45,16 @@ import ooo.oxo.moments.rx.RxEndlessRecyclerView;
 import ooo.oxo.moments.rx.RxList;
 import ooo.oxo.moments.user.UserGridAdapter;
 import ooo.oxo.moments.util.ImageCandidatesUtil;
+import ooo.oxo.moments.widget.RxBindingFragment;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class ExploreFragment extends RxFragment implements
-        UserGridAdapter.GridListener {
+public class ExploreFragment extends RxBindingFragment<ExploreFragmentBinding>
+        implements UserGridAdapter.GridListener {
 
     private static final String TAG = "ExploreFragment";
 
     private final ObservableArrayList<Media> feed = new ObservableArrayList<>();
-
-    private ExploreFragmentBinding binding;
 
     private FeedApi feedApi;
 
@@ -69,15 +66,14 @@ public class ExploreFragment extends RxFragment implements
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = ExploreFragmentBinding.inflate(inflater, container, false);
-        return binding.getRoot();
+    public ExploreFragmentBinding onCreateBinding(LayoutInflater inflater,
+                                                  @Nullable ViewGroup container,
+                                                  @Nullable Bundle savedInstanceState) {
+        return ExploreFragmentBinding.inflate(inflater, container, false);
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        ButterKnife.bind(this, view);
-
         binding.appbar.addOnOffsetChangedListener((v, i) -> binding.statusBar.setAlpha(Math.min(
                 1, (float) -i / (float) (binding.appbar.getHeight() - binding.statusBar.getHeight()))));
 
@@ -87,8 +83,6 @@ public class ExploreFragment extends RxFragment implements
 
         binding.content.setLayoutManager(new GridLayoutManager(getContext(), 3));
         binding.content.setAdapter(new UserGridAdapter(getContext(), feed, this));
-
-        binding.setFeed(feed);
 
         RxEndlessRecyclerView.reachesEnd(binding.content)
                 .compose(bindToLifecycle())

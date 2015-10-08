@@ -30,7 +30,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
-import com.trello.rxlifecycle.components.support.RxFragment;
 
 import java.util.List;
 
@@ -44,21 +43,19 @@ import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.rx.RxEndlessRecyclerView;
 import ooo.oxo.moments.rx.RxList;
 import ooo.oxo.moments.util.ImageCandidatesUtil;
+import ooo.oxo.moments.widget.RxBindingFragment;
 import pocketknife.BindArgument;
 import pocketknife.PocketKnife;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class UserStreamFragment extends RxFragment implements
-        RefreshEnabler,
-        FeedAdapter.FeedListener {
+public class UserStreamFragment extends RxBindingFragment<UserStreamFragmentBinding>
+        implements RefreshEnabler, FeedAdapter.FeedListener {
 
     private static final String TAG = "UserStreamFragment";
 
     @BindArgument("id")
     long id;
-
-    private UserStreamFragmentBinding binding;
 
     private FeedApi feedApi;
 
@@ -83,9 +80,10 @@ public class UserStreamFragment extends RxFragment implements
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = UserStreamFragmentBinding.inflate(inflater, container, false);
-        return binding.getRoot();
+    public UserStreamFragmentBinding onCreateBinding(LayoutInflater inflater,
+                                                     @Nullable ViewGroup container,
+                                                     @Nullable Bundle savedInstanceState) {
+        return UserStreamFragmentBinding.inflate(inflater, container, false);
     }
 
     @Override
@@ -96,8 +94,6 @@ public class UserStreamFragment extends RxFragment implements
 
         binding.content.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.content.setAdapter(new FeedAdapter(getContext(), feed, this));
-
-        binding.setFeed(feed);
 
         RxEndlessRecyclerView.reachesEnd(binding.content)
                 .compose(bindToLifecycle())

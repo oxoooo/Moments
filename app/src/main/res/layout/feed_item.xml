@@ -25,6 +25,10 @@
         <import type="android.view.View" />
 
         <variable
+            name="holder"
+            type="ooo.oxo.moments.feed.FeedAdapter.ViewHolder" />
+
+        <variable
             name="item"
             type="ooo.oxo.moments.model.Media" />
 
@@ -51,6 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?selectableItemBackgroundBorderless"
+                android:onClick="@{holder.clickUser}"
                 android:orientation="horizontal"
                 android:padding="8dp">
 
@@ -97,7 +102,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/user_container"
-                android:foreground="?selectableItemBackground">
+                android:foreground="?selectableItemBackground"
+                android:onClick="@{holder.clickImage}">
 
                 <ooo.oxo.moments.widget.RatioImageView
                     android:id="@+id/image"
@@ -119,6 +125,7 @@
                 android:layout_marginTop="8dp"
                 android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/like"
+                android:onClick="@{holder.like}"
                 android:scaleType="center"
                 android:src="@drawable/ic_heart_outline_grey" />
 
@@ -132,6 +139,7 @@
                 android:layout_toEndOf="@+id/like"
                 android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/comment"
+                android:onClick="@{holder.comment}"
                 android:scaleType="center"
                 android:src="@drawable/ic_comment_outline_grey" />
 
@@ -147,6 +155,7 @@
                 android:drawablePadding="4dp"
                 android:drawableStart="@drawable/ic_heart_small_blue"
                 android:gravity="center_vertical"
+                android:onClick="@{holder.clickLikes}"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
                 android:text="@{@string/n_likes(item.likeCount)}"

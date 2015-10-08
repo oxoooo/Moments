@@ -19,32 +19,24 @@
 package ooo.oxo.moments.feed;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
+import android.databinding.ObservableList;
 import android.text.SpannableStringBuilder;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.List;
-
 import butterknife.ButterKnife;
-import butterknife.OnClick;
-import ooo.oxo.moments.R;
 import ooo.oxo.moments.databinding.FeedItemBinding;
 import ooo.oxo.moments.model.Comment;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.text.CommentTextUtils;
-import ooo.oxo.moments.widget.RecyclerViewBindingHolder;
+import ooo.oxo.moments.widget.BindingRecyclerView;
 
-public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
+public class FeedAdapter extends BindingRecyclerView.ListAdapter<Media, FeedAdapter.ViewHolder> {
 
-    private final LayoutInflater inflater;
-    private final List<Media> feed;
     private final FeedListener listener;
 
-    public FeedAdapter(Context context, List<Media> feed, FeedListener listener) {
-        this.inflater = LayoutInflater.from(context);
-        this.feed = feed;
+    public FeedAdapter(Context context, ObservableList<Media> data, FeedListener listener) {
+        super(context, data);
         this.listener = listener;
     }
 
@@ -55,7 +47,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Media item = feed.get(position);
+        Media item = data.get(position);
 
         // TODO: consider caching for smoother scrolling
         SpannableStringBuilder comments = new SpannableStringBuilder();
@@ -77,15 +69,11 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             comments.append(text);
         }
 
+        holder.binding.setHolder(holder);
         holder.binding.setItem(item);
         holder.binding.setComments(comments);
 
         holder.binding.image.setOriginalSize(item.originalWidth, item.originalHeight);
-    }
-
-    @Override
-    public int getItemCount() {
-        return feed.size();
     }
 
     public interface FeedListener {
@@ -104,35 +92,30 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     }
 
-    public class ViewHolder extends RecyclerViewBindingHolder<FeedItemBinding> {
+    public class ViewHolder extends BindingRecyclerView.ViewHolder<FeedItemBinding> {
 
         public ViewHolder(FeedItemBinding binding) {
             super(binding);
             ButterKnife.bind(this, itemView);
         }
 
-        @OnClick(R.id.user_container)
-        void clickUser(View v) {
+        public void clickUser(View v) {
             listener.onUserClick(this);
         }
 
-        @OnClick(R.id.image_container)
-        void clickImage(View v) {
+        public void clickImage(View v) {
             listener.onImageClick(this);
         }
 
-        @OnClick(R.id.likes)
-        void clickLikes(View v) {
+        public void clickLikes(View v) {
             listener.onLikesClick(this);
         }
 
-        @OnClick(R.id.like)
-        void like(View v) {
+        public void like(View v) {
             listener.onLike(this);
         }
 
-        @OnClick(R.id.comment)
-        void comment(View v) {
+        public void comment(View v) {
             listener.onComment(this);
         }
 

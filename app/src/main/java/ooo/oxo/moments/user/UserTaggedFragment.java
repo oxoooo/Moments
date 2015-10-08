@@ -30,7 +30,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
-import com.trello.rxlifecycle.components.support.RxFragment;
 
 import java.util.List;
 
@@ -42,14 +41,14 @@ import ooo.oxo.moments.databinding.UserGridFragmentBinding;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.rx.RxList;
 import ooo.oxo.moments.util.ImageCandidatesUtil;
+import ooo.oxo.moments.widget.RxBindingFragment;
 import pocketknife.BindArgument;
 import pocketknife.PocketKnife;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class UserTaggedFragment extends RxFragment implements
-        RefreshEnabler,
-        UserGridAdapter.GridListener {
+public class UserTaggedFragment extends RxBindingFragment<UserGridFragmentBinding>
+        implements RefreshEnabler, UserGridAdapter.GridListener {
 
     private static final String TAG = "UserGridFragment";
 
@@ -57,8 +56,6 @@ public class UserTaggedFragment extends RxFragment implements
 
     @BindArgument("id")
     long id;
-
-    private UserGridFragmentBinding binding;
 
     private FeedApi feedApi;
 
@@ -80,9 +77,10 @@ public class UserTaggedFragment extends RxFragment implements
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = UserGridFragmentBinding.inflate(inflater, container, false);
-        return binding.getRoot();
+    public UserGridFragmentBinding onCreateBinding(LayoutInflater inflater,
+                                                   @Nullable ViewGroup container,
+                                                   @Nullable Bundle savedInstanceState) {
+        return UserGridFragmentBinding.inflate(inflater, container, false);
     }
 
     @Override
@@ -93,8 +91,6 @@ public class UserTaggedFragment extends RxFragment implements
 
         binding.content.setLayoutManager(new GridLayoutManager(getContext(), 3));
         binding.content.setAdapter(new UserGridAdapter(getContext(), feed, this));
-
-        binding.setFeed(feed);
 
         RxSwipeRefreshLayout.refreshes(binding.refresher)
                 .compose(bindToLifecycle())

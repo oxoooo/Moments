@@ -16,26 +16,23 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
+package ooo.oxo.moments.widget;
+
+import android.view.View;
+
+public class ImmersiveUtil {
+
+    private static final int SYSTEM_UI_IMMERSIVE = View.SYSTEM_UI_FLAG_IMMERSIVE
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+    public static void enter(View view) {
+        view.setSystemUiVisibility(view.getSystemUiVisibility() | SYSTEM_UI_IMMERSIVE);
     }
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.4.0-beta6'
-        classpath "com.android.databinding:dataBinder:1.0-rc3"
-        classpath 'me.tatarka:gradle-retrolambda:3.2.2'
+    public static void exit(View view) {
+        int flags = view.getSystemUiVisibility();
+        view.setSystemUiVisibility(flags & (~SYSTEM_UI_IMMERSIVE));
     }
-}
 
-allprojects {
-    repositories {
-        jcenter()
-        mavenCentral()
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

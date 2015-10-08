@@ -19,14 +19,6 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <data>
-
-        <variable
-            name="friends"
-            type="android.databinding.ObservableArrayList" />
-
-    </data>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -41,7 +33,7 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:navigationIcon="@drawable/ic_arrow_back_24dp"
+                app:navigationIcon="?homeAsUpIndicator"
                 app:titleTextAppearance="@style/ToolbarTitleTextAppearance.AllCaps" />
 
         </android.support.design.widget.AppBarLayout>
@@ -50,8 +42,7 @@
             android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            app:data="@{friends}" />
+            android:layout_weight="1" />
 
     </LinearLayout>
 

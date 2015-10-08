@@ -60,7 +60,7 @@
             android:layout_gravity="top"
             android:alpha="0"
             android:paddingBottom="32dp"
-            app:navigationIcon="@drawable/ic_arrow_back_24dp"
+            app:navigationIcon="?homeAsUpIndicator"
             tools:alpha="1" />
 
         <TextView
