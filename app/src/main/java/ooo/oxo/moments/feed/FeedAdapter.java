@@ -26,12 +26,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import ooo.oxo.library.databinding.support.widget.BindingRecyclerView;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.databinding.FeedItemBinding;
 import ooo.oxo.moments.model.Comment;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.text.CommentTextUtils;
-import ooo.oxo.moments.widget.BindingRecyclerView;
 
 public class FeedAdapter extends BindingRecyclerView.ListAdapter<Media, FeedAdapter.ViewHolder> {
 

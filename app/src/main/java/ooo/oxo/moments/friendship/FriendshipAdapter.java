@@ -24,10 +24,10 @@ import android.support.annotation.LayoutRes;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import ooo.oxo.library.databinding.support.widget.BindingRecyclerView;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.databinding.FriendshipItemBinding;
 import ooo.oxo.moments.model.User;
-import ooo.oxo.moments.widget.BindingRecyclerView;
 
 public class FriendshipAdapter extends BindingRecyclerView.ListAdapter<User, FriendshipAdapter.ViewHolder> {
 
