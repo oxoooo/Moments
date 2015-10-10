@@ -19,7 +19,6 @@
 package ooo.oxo.moments.user;
 
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
 import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -32,27 +31,30 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
-import butterknife.ButterKnife;
+import java.util.List;
+
 import butterknife.OnClick;
 import jp.wasabeef.glide.transformations.CropCircleTransformation;
 import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
+import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.api.UserApi;
 import ooo.oxo.moments.databinding.UserActivityBinding;
 import ooo.oxo.moments.friendship.FriendshipActivity;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.model.User;
+import ooo.oxo.moments.rx.RxList;
 import ooo.oxo.moments.util.PostponedTransitionTrigger;
 import ooo.oxo.moments.widget.IconifiedPagerAdapter;
+import ooo.oxo.moments.widget.RxBindingAppCompatActivity;
 import pocketknife.BindExtra;
 import pocketknife.NotRequired;
 import pocketknife.PocketKnife;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class UserActivity extends RxAppCompatActivity {
+public class UserActivity extends RxBindingAppCompatActivity<UserActivityBinding> {
 
     private static final String TAG = "UserActivity";
 
@@ -70,9 +72,11 @@ public class UserActivity extends RxAppCompatActivity {
     @NotRequired
     String fromPostId;
 
-    private UserActivityBinding binding;
+    Observable<List<Media>> firstLoad;
 
     private UserApi userApi;
+
+    private FeedApi feedApi;
 
     private PostponedTransitionTrigger transitionTrigger;
 
@@ -81,12 +85,14 @@ public class UserActivity extends RxAppCompatActivity {
     private int offset;
 
     @Override
+    protected int getContentView(Bundle savedInstanceState) {
+        return R.layout.user_activity;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = DataBindingUtil.setContentView(this, R.layout.user_activity);
-
-        ButterKnife.bind(this);
         PocketKnife.bindExtras(this);
 
         setTitle(null);
@@ -112,7 +118,9 @@ public class UserActivity extends RxAppCompatActivity {
         });
 
         InstaApplication application = InstaApplication.from(this);
+
         userApi = application.createApi(UserApi.class);
+        feedApi = application.createApi(FeedApi.class);
 
         if (user != null) {
             supportPostponeEnterTransition();
@@ -129,9 +137,10 @@ public class UserActivity extends RxAppCompatActivity {
             throw new IllegalStateException("Must specify which user to load");
         }
 
-        loadUser()
-                .compose(bindToLifecycle())
-                .subscribe(this::populateProfile);
+        loadUser().compose(bindToLifecycle()).subscribe(this::populateProfile);
+
+        firstLoad = loadFeed(null).compose(bindToLifecycle()).cache();
+        firstLoad.subscribe(RxList.appendTo(feed), this::showError);
     }
 
     @Override
@@ -147,6 +156,13 @@ public class UserActivity extends RxAppCompatActivity {
         if (fragment instanceof RefreshEnabler) {
             ((RefreshEnabler) fragment).setCanRefresh(offset == 0);
         }
+    }
+
+    Observable<List<Media>> loadFeed(String maxId) {
+        return feedApi.ofUser(id, maxId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .filter(envelope -> envelope.items != null)
+                .map(envelope -> envelope.items);
     }
 
     private Observable<User> loadUser() {
@@ -203,9 +219,9 @@ public class UserActivity extends RxAppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return UserGridFragment.newFragment(id);
+                    return new UserGridFragment();
                 case 1:
-                    return UserStreamFragment.newFragment(id);
+                    return new UserStreamFragment();
                 case 2:
                     return new Fragment();
                 case 3:

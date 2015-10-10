@@ -21,10 +21,7 @@ package ooo.oxo.moments.inbox;
 import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
@@ -53,17 +50,15 @@ public class MyInboxFragment extends RxBindingFragment<InboxMineFragmentBinding>
         newsApi = InstaApplication.from(getContext()).createApi(NewsApi.class);
     }
 
-    @Nullable
     @Override
-    public InboxMineFragmentBinding onCreateBinding(LayoutInflater inflater,
-                                                    @Nullable ViewGroup container,
-                                                    @Nullable Bundle savedInstanceState) {
-        return InboxMineFragmentBinding.inflate(inflater, container, false);
+    public int getContentView(@Nullable Bundle savedInstanceState) {
+        return R.layout.inbox_mine_fragment;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        binding.content.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.refresher.setColorSchemeResources(R.color.primary);
+
         binding.content.setAdapter(new MyInboxAdapter(getContext(), inbox));
 
         RxSwipeRefreshLayout.refreshes(binding.refresher)

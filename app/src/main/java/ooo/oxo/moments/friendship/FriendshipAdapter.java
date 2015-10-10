@@ -20,8 +20,11 @@ package ooo.oxo.moments.friendship;
 
 import android.content.Context;
 import android.databinding.ObservableList;
+import android.support.annotation.LayoutRes;
+import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import ooo.oxo.moments.R;
 import ooo.oxo.moments.databinding.FriendshipItemBinding;
 import ooo.oxo.moments.model.User;
 import ooo.oxo.moments.widget.BindingRecyclerView;
@@ -37,7 +40,7 @@ public class FriendshipAdapter extends BindingRecyclerView.ListAdapter<User, Fri
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(FriendshipItemBinding.inflate(inflater, parent, false));
+        return new ViewHolder(inflater, R.layout.friendship_item, parent);
     }
 
     @Override
@@ -53,8 +56,8 @@ public class FriendshipAdapter extends BindingRecyclerView.ListAdapter<User, Fri
 
     public class ViewHolder extends BindingRecyclerView.ViewHolder<FriendshipItemBinding> {
 
-        public ViewHolder(FriendshipItemBinding binding) {
-            super(binding);
+        public ViewHolder(LayoutInflater inflater, @LayoutRes int layoutId, ViewGroup parent) {
+            super(inflater, layoutId, parent);
             itemView.setOnClickListener(v -> listener.openUser(this));
         }
 

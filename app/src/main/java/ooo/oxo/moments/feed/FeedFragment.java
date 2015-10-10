@@ -24,10 +24,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
@@ -64,12 +61,9 @@ public class FeedFragment extends RxBindingFragment<FeedFragmentBinding>
         feedApi = InstaApplication.from(getContext()).createApi(FeedApi.class);
     }
 
-    @Nullable
     @Override
-    public FeedFragmentBinding onCreateBinding(LayoutInflater inflater,
-                                               @Nullable ViewGroup container,
-                                               @Nullable Bundle savedInstanceState) {
-        return FeedFragmentBinding.inflate(inflater, container, false);
+    public int getContentView(@Nullable Bundle savedInstanceState) {
+        return R.layout.feed_fragment;
     }
 
     @Override
@@ -81,7 +75,6 @@ public class FeedFragment extends RxBindingFragment<FeedFragmentBinding>
 
         binding.refresher.setColorSchemeResources(R.color.primary);
 
-        binding.content.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.content.setAdapter(new FeedAdapter(getContext(), feed, this));
 
         RxEndlessRecyclerView.reachesEnd(binding.content)

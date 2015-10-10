@@ -24,10 +24,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v7.widget.GridLayoutManager;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
 
@@ -75,12 +72,9 @@ public class UserTaggedFragment extends RxBindingFragment<UserGridFragmentBindin
         feedApi = InstaApplication.from(getContext()).createApi(FeedApi.class);
     }
 
-    @Nullable
     @Override
-    public UserGridFragmentBinding onCreateBinding(LayoutInflater inflater,
-                                                   @Nullable ViewGroup container,
-                                                   @Nullable Bundle savedInstanceState) {
-        return UserGridFragmentBinding.inflate(inflater, container, false);
+    public int getContentView(@Nullable Bundle savedInstanceState) {
+        return R.layout.user_grid_fragment;
     }
 
     @Override
@@ -89,7 +83,6 @@ public class UserTaggedFragment extends RxBindingFragment<UserGridFragmentBindin
 
         binding.refresher.setColorSchemeResources(R.color.primary);
 
-        binding.content.setLayoutManager(new GridLayoutManager(getContext(), 3));
         binding.content.setAdapter(new UserGridAdapter(getContext(), feed, this));
 
         RxSwipeRefreshLayout.refreshes(binding.refresher)

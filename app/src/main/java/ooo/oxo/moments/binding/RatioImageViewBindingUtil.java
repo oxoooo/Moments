@@ -16,26 +16,18 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
+package ooo.oxo.moments.binding;
+
+import android.databinding.BindingAdapter;
+
+import ooo.oxo.moments.widget.RatioImageView;
+
+@SuppressWarnings("unused")
+public class RatioImageViewBindingUtil {
+
+    @BindingAdapter({"bind:originalWidth", "bind:originalHeight"})
+    public static void setOriginalSize(RatioImageView view, int originalWidth, int originalHeight) {
+        view.setOriginalSize(originalWidth, originalHeight);
     }
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.4.0-beta6'
-        classpath "com.android.databinding:dataBinder:1.0-rc4"
-        classpath 'me.tatarka:gradle-retrolambda:3.2.2'
-    }
-}
-
-allprojects {
-    repositories {
-        jcenter()
-        mavenCentral()
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

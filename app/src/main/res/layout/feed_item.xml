@@ -110,6 +110,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:images="@{item.imageVersions}"
+                    app:originalHeight="@{item.originalHeight}"
+                    app:originalWidth="@{item.originalWidth}"
                     tools:layout_height="320dp"
                     tools:src="#999" />
 

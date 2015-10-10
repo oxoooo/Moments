@@ -17,6 +17,7 @@
   -->
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".user.UserActivity">
 
@@ -31,6 +32,7 @@
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:padding="@dimen/item_margin_stream"
+            app:layoutManager="LinearLayoutManager"
             tools:padding="8dp" />
 
     </android.support.v4.widget.SwipeRefreshLayout>

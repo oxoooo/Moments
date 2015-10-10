@@ -16,26 +16,16 @@
  * along with this program;  if not, see <http://www.gnu.org/licenses/>.
  */
 
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
+package ooo.oxo.moments.rx;
+
+import android.support.v4.widget.SwipeRefreshLayout;
+
+import rx.functions.Action0;
+
+public class RxRefresher {
+
+    public static Action0 setRefreshing(SwipeRefreshLayout refresher, boolean refreshing) {
+        return () -> refresher.post(() -> refresher.setRefreshing(refreshing));
     }
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.4.0-beta6'
-        classpath "com.android.databinding:dataBinder:1.0-rc4"
-        classpath 'me.tatarka:gradle-retrolambda:3.2.2'
-    }
-}
-
-allprojects {
-    repositories {
-        jcenter()
-        mavenCentral()
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

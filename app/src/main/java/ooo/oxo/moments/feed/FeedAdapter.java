@@ -20,11 +20,13 @@ package ooo.oxo.moments.feed;
 
 import android.content.Context;
 import android.databinding.ObservableList;
+import android.support.annotation.LayoutRes;
 import android.text.SpannableStringBuilder;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import butterknife.ButterKnife;
+import ooo.oxo.moments.R;
 import ooo.oxo.moments.databinding.FeedItemBinding;
 import ooo.oxo.moments.model.Comment;
 import ooo.oxo.moments.model.Media;
@@ -42,7 +44,7 @@ public class FeedAdapter extends BindingRecyclerView.ListAdapter<Media, FeedAdap
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(FeedItemBinding.inflate(inflater, parent, false));
+        return new ViewHolder(inflater, R.layout.feed_item, parent);
     }
 
     @Override
@@ -73,7 +75,7 @@ public class FeedAdapter extends BindingRecyclerView.ListAdapter<Media, FeedAdap
         holder.binding.setItem(item);
         holder.binding.setComments(comments);
 
-        holder.binding.image.setOriginalSize(item.originalWidth, item.originalHeight);
+        holder.binding.executePendingBindings();
     }
 
     public interface FeedListener {
@@ -94,9 +96,8 @@ public class FeedAdapter extends BindingRecyclerView.ListAdapter<Media, FeedAdap
 
     public class ViewHolder extends BindingRecyclerView.ViewHolder<FeedItemBinding> {
 
-        public ViewHolder(FeedItemBinding binding) {
-            super(binding);
-            ButterKnife.bind(this, itemView);
+        public ViewHolder(LayoutInflater inflater, @LayoutRes int layoutId, ViewGroup parent) {
+            super(inflater, layoutId, parent);
         }
 
         public void clickUser(View v) {

@@ -24,75 +24,46 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import com.jakewharton.rxbinding.support.v4.widget.RxSwipeRefreshLayout;
 
 import java.util.List;
 
-import ooo.oxo.moments.InstaApplication;
 import ooo.oxo.moments.R;
 import ooo.oxo.moments.ViewerActivity;
-import ooo.oxo.moments.api.FeedApi;
 import ooo.oxo.moments.databinding.UserStreamFragmentBinding;
 import ooo.oxo.moments.feed.FeedAdapter;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.rx.RxEndlessRecyclerView;
 import ooo.oxo.moments.rx.RxList;
+import ooo.oxo.moments.rx.RxRefresher;
 import ooo.oxo.moments.util.ImageCandidatesUtil;
 import ooo.oxo.moments.widget.RxBindingFragment;
-import pocketknife.BindArgument;
-import pocketknife.PocketKnife;
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
 
 public class UserStreamFragment extends RxBindingFragment<UserStreamFragmentBinding>
         implements RefreshEnabler, FeedAdapter.FeedListener {
 
     private static final String TAG = "UserStreamFragment";
 
-    @BindArgument("id")
-    long id;
-
-    private FeedApi feedApi;
-
     private ObservableArrayList<Media> feed;
-
-    public static UserStreamFragment newFragment(long id) {
-        Bundle arguments = new Bundle();
-        arguments.putLong("id", id);
-
-        UserStreamFragment fragment = new UserStreamFragment();
-        fragment.setArguments(arguments);
-
-        return fragment;
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        feedApi = InstaApplication.from(getContext()).createApi(FeedApi.class);
         feed = ((UserActivity) getActivity()).feed;
     }
 
-    @Nullable
     @Override
-    public UserStreamFragmentBinding onCreateBinding(LayoutInflater inflater,
-                                                     @Nullable ViewGroup container,
-                                                     @Nullable Bundle savedInstanceState) {
-        return UserStreamFragmentBinding.inflate(inflater, container, false);
+    public int getContentView(@Nullable Bundle savedInstanceState) {
+        return R.layout.user_stream_fragment;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        PocketKnife.bindArguments(this);
-
         binding.refresher.setColorSchemeResources(R.color.primary);
 
-        binding.content.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.content.setAdapter(new FeedAdapter(getContext(), feed, this));
 
         RxEndlessRecyclerView.reachesEnd(binding.content)
@@ -104,24 +75,18 @@ public class UserStreamFragment extends RxBindingFragment<UserStreamFragmentBind
         RxSwipeRefreshLayout.refreshes(binding.refresher)
                 .compose(bindToLifecycle())
                 .flatMap(avoid -> load(null))
-                .doOnError(((UserActivity) getActivity())::showError)
                 .subscribe(RxList.prependToOrReplace(feed), this::showError);
 
-        load(null)
-                .compose(bindToLifecycle())
-                .doOnError(((UserActivity) getActivity())::showError)
-                .subscribe(RxList.appendTo(feed), this::showError);
-
-        binding.refresher.post(() -> binding.refresher.setRefreshing(true));
+        ((UserActivity) getActivity()).firstLoad
+                .doOnSubscribe(() -> RxRefresher.setRefreshing(binding.refresher, true))
+                .doOnCompleted(() -> RxRefresher.setRefreshing(binding.refresher, false))
+                .subscribe();
     }
 
     private Observable<List<Media>> load(String maxId) {
-        return feedApi.ofUser(id, maxId)
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(() -> binding.refresher.setRefreshing(true))
-                .doOnCompleted(() -> binding.refresher.setRefreshing(false))
-                .filter(envelope -> envelope.items != null)
-                .map(envelope -> envelope.items);
+        return ((UserActivity) getActivity()).loadFeed(maxId)
+                .doOnSubscribe(() -> RxRefresher.setRefreshing(binding.refresher, true))
+                .doOnCompleted(() -> RxRefresher.setRefreshing(binding.refresher, false));
     }
 
     private void showError(Throwable error) {

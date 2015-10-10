@@ -20,8 +20,11 @@ package ooo.oxo.moments.user;
 
 import android.content.Context;
 import android.databinding.ObservableList;
+import android.support.annotation.LayoutRes;
+import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import ooo.oxo.moments.R;
 import ooo.oxo.moments.databinding.UserGridItemBinding;
 import ooo.oxo.moments.model.Media;
 import ooo.oxo.moments.widget.BindingRecyclerView;
@@ -37,7 +40,7 @@ public class UserGridAdapter extends BindingRecyclerView.ListAdapter<Media, User
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(UserGridItemBinding.inflate(inflater, parent, false));
+        return new ViewHolder(inflater, R.layout.user_grid_item, parent);
     }
 
     @Override
@@ -53,8 +56,8 @@ public class UserGridAdapter extends BindingRecyclerView.ListAdapter<Media, User
 
     public class ViewHolder extends BindingRecyclerView.ViewHolder<UserGridItemBinding> {
 
-        public ViewHolder(UserGridItemBinding binding) {
-            super(binding);
+        public ViewHolder(LayoutInflater inflater, @LayoutRes int layoutId, ViewGroup parent) {
+            super(inflater, layoutId, parent);
             itemView.setOnClickListener(v -> listener.onImageClick(this));
         }
 

@@ -19,15 +19,11 @@
 package ooo.oxo.moments.friendship;
 
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
 import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.widget.Toast;
-
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import java.util.List;
 
@@ -39,13 +35,14 @@ import ooo.oxo.moments.model.User;
 import ooo.oxo.moments.rx.RxEndlessRecyclerView;
 import ooo.oxo.moments.rx.RxList;
 import ooo.oxo.moments.user.UserActivity;
+import ooo.oxo.moments.widget.RxBindingAppCompatActivity;
 import pocketknife.BindExtra;
 import pocketknife.NotRequired;
 import pocketknife.PocketKnife;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class FriendshipActivity extends RxAppCompatActivity
+public class FriendshipActivity extends RxBindingAppCompatActivity<FriendshipActivityBinding>
         implements FriendshipAdapter.FriendshipListener {
 
     private static final String TAG = "FriendshipActivity";
@@ -67,15 +64,17 @@ public class FriendshipActivity extends RxAppCompatActivity
     private String nextMaxId;
 
     @Override
+    protected int getContentView(Bundle savedInstanceState) {
+        return R.layout.friendship_activity;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         friendshipApi = InstaApplication.from(this).createApi(FriendshipApi.class);
 
         nextMaxId = null;
-
-        FriendshipActivityBinding binding = DataBindingUtil.setContentView(
-                this, R.layout.friendship_activity);
 
         PocketKnife.bindExtras(this);
 
@@ -97,7 +96,6 @@ public class FriendshipActivity extends RxAppCompatActivity
 
         binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
 
-        binding.content.setLayoutManager(new LinearLayoutManager(this));
         binding.content.setAdapter(new FriendshipAdapter(this, friends, this));
 
         RxEndlessRecyclerView.reachesEnd(binding.content)

@@ -22,32 +22,20 @@ import android.databinding.DataBindingUtil;
 import android.databinding.ViewDataBinding;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
-import android.support.annotation.Nullable;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
-import com.trello.rxlifecycle.components.support.RxFragment;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
-public abstract class RxBindingFragment<V extends ViewDataBinding> extends RxFragment {
+public abstract class RxBindingAppCompatActivity<V extends ViewDataBinding> extends RxAppCompatActivity {
 
     protected V binding;
 
     @LayoutRes
-    public abstract int getContentView(@Nullable Bundle savedInstanceState);
+    protected abstract int getContentView(Bundle savedInstanceState);
 
-    @Nullable
-    public V onCreateBinding(LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        return DataBindingUtil.inflate(inflater, getContentView(savedInstanceState), container, false);
-    }
-
-    @Nullable
     @Override
-    public final View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
-                                   @Nullable Bundle savedInstanceState) {
-        binding = onCreateBinding(inflater, container, savedInstanceState);
-        return binding == null ? null : binding.getRoot();
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = DataBindingUtil.setContentView(this, getContentView(savedInstanceState));
     }
 
 }

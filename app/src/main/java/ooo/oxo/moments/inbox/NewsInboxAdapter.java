@@ -20,8 +20,11 @@ package ooo.oxo.moments.inbox;
 
 import android.content.Context;
 import android.databinding.ObservableList;
+import android.support.annotation.LayoutRes;
+import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import ooo.oxo.moments.R;
 import ooo.oxo.moments.databinding.InboxNewsItemBinding;
 import ooo.oxo.moments.model.Story;
 import ooo.oxo.moments.widget.BindingRecyclerView;
@@ -34,7 +37,7 @@ public class NewsInboxAdapter extends BindingRecyclerView.ListAdapter<Story, New
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(InboxNewsItemBinding.inflate(inflater, parent, false));
+        return new ViewHolder(inflater, R.layout.inbox_news_item, parent);
     }
 
     @Override
@@ -44,8 +47,8 @@ public class NewsInboxAdapter extends BindingRecyclerView.ListAdapter<Story, New
 
     public class ViewHolder extends BindingRecyclerView.ViewHolder<InboxNewsItemBinding> {
 
-        public ViewHolder(InboxNewsItemBinding binding) {
-            super(binding);
+        public ViewHolder(LayoutInflater inflater, @LayoutRes int layoutId, ViewGroup parent) {
+            super(inflater, layoutId, parent);
         }
 
     }

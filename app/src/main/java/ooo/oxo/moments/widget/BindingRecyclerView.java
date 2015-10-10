@@ -19,10 +19,13 @@
 package ooo.oxo.moments.widget;
 
 import android.content.Context;
+import android.databinding.DataBindingUtil;
 import android.databinding.ObservableList;
 import android.databinding.ViewDataBinding;
+import android.support.annotation.LayoutRes;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.ViewGroup;
 
 public class BindingRecyclerView {
 
@@ -79,6 +82,10 @@ public class BindingRecyclerView {
     public static class ViewHolder<V extends ViewDataBinding> extends RecyclerView.ViewHolder {
 
         public final V binding;
+
+        public ViewHolder(LayoutInflater inflater, @LayoutRes int layoutId, ViewGroup parent) {
+            this(DataBindingUtil.inflate(inflater, layoutId, parent, false));
+        }
 
         public ViewHolder(V binding) {
             super(binding.getRoot());
