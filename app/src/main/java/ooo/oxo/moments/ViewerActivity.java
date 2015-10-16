@@ -35,12 +35,12 @@ import com.bumptech.glide.request.target.SizeReadyCallback;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import it.sephiroth.android.library.imagezoom.ImageViewTouchBase;
+import ooo.oxo.library.widget.PullBackLayout;
 import ooo.oxo.moments.util.PostponedTransitionTrigger;
 import ooo.oxo.moments.util.SimpleTransitionListener;
 import ooo.oxo.moments.widget.ImmersiveUtil;
-import ooo.oxo.moments.widget.PullBackLayout;
+import ooo.oxo.moments.widget.TouchImageView;
 
 public class ViewerActivity extends AppCompatActivity implements PullBackLayout.Callback {
 
@@ -48,7 +48,7 @@ public class ViewerActivity extends AppCompatActivity implements PullBackLayout.
     PullBackLayout puller;
 
     @Bind(R.id.image)
-    ImageViewTouch image;
+    TouchImageView image;
 
     @Bind(R.id.header)
     View header;
@@ -187,11 +187,6 @@ public class ViewerActivity extends AppCompatActivity implements PullBackLayout.
     @Override
     public void onPullComplete() {
         supportFinishAfterTransition();
-    }
-
-    @Override
-    public boolean canPullDown() {
-        return !image.canScroll();
     }
 
 }

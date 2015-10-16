@@ -35,9 +35,7 @@ import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import ooo.oxo.moments.app.FuckingFragmentManager;
-import ooo.oxo.moments.binding.ImageViewBindingUtil;
 import ooo.oxo.moments.explore.ExploreFragment;
 import ooo.oxo.moments.feed.FeedFragment;
 import ooo.oxo.moments.inbox.InboxFragment;
@@ -56,13 +54,10 @@ public class MainActivity extends RxAppCompatActivity {
     @Bind(R.id.navigation)
     NavigationView navigation;
 
-    @Bind(R.id.avatar)
     ImageView avatar;
 
-    @Bind(R.id.user_name)
     TextView userName;
 
-    @Bind(R.id.full_name)
     TextView fullName;
 
     @BindExtra("user")
@@ -79,9 +74,16 @@ public class MainActivity extends RxAppCompatActivity {
         ButterKnife.bind(this);
         PocketKnife.bindExtras(this);
 
-        ImageViewBindingUtil.loadRoundImage(avatar, user.profilePicUrl);
-        userName.setText(user.username);
-        fullName.setText(user.fullName);
+//FIXME
+//        avatar = (ImageView) navigation.findViewById(R.id.avatar);
+//        avatar.setOnClickListener(this::onClickSelf);
+//        ImageViewBindingUtil.loadRoundImage(avatar, user.profilePicUrl);
+//
+//        userName = (TextView) navigation.findViewById(R.id.user_name);
+//        userName.setText(user.username);
+//
+//        fullName = (TextView) navigation.findViewById(R.id.full_name);
+//        fullName.setText(user.fullName);
 
         fragmentManager = new FuckingFragmentManager(this, R.id.container);
 
@@ -118,7 +120,6 @@ public class MainActivity extends RxAppCompatActivity {
         }
     }
 
-    @OnClick(R.id.avatar)
     void onClickSelf(View v) {
         Intent intent = new Intent(this, UserActivity.class);
         intent.putExtra("user", user);

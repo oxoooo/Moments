@@ -57,18 +57,24 @@
                 android:layout_height="wrap_content"
                 android:theme="@style/AppTheme.AppBarOverlay">
 
-                <ooo.oxo.moments.widget.StatusBarHolderView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:layout_scrollFlags="scroll|enterAlways" />
+                    android:orientation="vertical"
+                    app:layout_scrollFlags="scroll|enterAlways|snap">
 
-                <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layout_scrollFlags="scroll|enterAlways"
-                    app:navigationIcon="@drawable/ic_menu_24dp"
-                    app:title="@string/app_name" />
+                    <ooo.oxo.moments.widget.StatusBarHolderView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <android.support.v7.widget.Toolbar
+                        android:id="@+id/toolbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:navigationIcon="@drawable/ic_menu_24dp"
+                        app:title="@string/app_name" />
+
+                </LinearLayout>
 
             </android.support.design.widget.AppBarLayout>
 
