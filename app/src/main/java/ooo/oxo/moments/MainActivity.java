@@ -19,23 +19,20 @@
 package ooo.oxo.moments;
 
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
-import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.jakewharton.rxbinding.support.design.widget.RxNavigationView;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
 import ooo.oxo.moments.app.FuckingFragmentManager;
+import ooo.oxo.moments.databinding.MainActivityBinding;
+import ooo.oxo.moments.databinding.MainDrawerHeaderBinding;
 import ooo.oxo.moments.explore.ExploreFragment;
 import ooo.oxo.moments.feed.FeedFragment;
 import ooo.oxo.moments.inbox.InboxFragment;
@@ -48,20 +45,12 @@ public class MainActivity extends RxAppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    @Bind(R.id.drawer)
-    DrawerLayout drawer;
-
-    @Bind(R.id.navigation)
-    NavigationView navigation;
-
-    ImageView avatar;
-
-    TextView userName;
-
-    TextView fullName;
-
     @BindExtra("user")
     User user;
+
+    private MainActivityBinding binding;
+
+    private MainDrawerHeaderBinding headerBinding;
 
     private FuckingFragmentManager fragmentManager;
 
@@ -69,36 +58,30 @@ public class MainActivity extends RxAppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.main_activity);
-
-        ButterKnife.bind(this);
         PocketKnife.bindExtras(this);
 
-//FIXME
-//        avatar = (ImageView) navigation.findViewById(R.id.avatar);
-//        avatar.setOnClickListener(this::onClickSelf);
-//        ImageViewBindingUtil.loadRoundImage(avatar, user.profilePicUrl);
-//
-//        userName = (TextView) navigation.findViewById(R.id.user_name);
-//        userName.setText(user.username);
-//
-//        fullName = (TextView) navigation.findViewById(R.id.full_name);
-//        fullName.setText(user.fullName);
+        binding = DataBindingUtil.setContentView(this, R.layout.main_activity);
+
+        headerBinding = MainDrawerHeaderBinding.inflate(getLayoutInflater(), binding.navigation, false);
+        headerBinding.setUser(user);
+        headerBinding.avatar.setOnClickListener(this::onClickSelf);
+
+        binding.navigation.addHeaderView(headerBinding.getRoot());
 
         fragmentManager = new FuckingFragmentManager(this, R.id.container);
 
         switchFragment(R.id.home);
-        navigation.setCheckedItem(R.id.home);
+        binding.navigation.setCheckedItem(R.id.home);
 
-        RxNavigationView.itemSelections(navigation)
+        RxNavigationView.itemSelections(binding.navigation)
                 .compose(bindToLifecycle())
                 .map(MenuItem::getItemId)
                 .filter(this::switchFragment)
-                .subscribe(result -> drawer.closeDrawers());
+                .subscribe(result -> binding.drawer.closeDrawers());
     }
 
     public void openNavigation() {
-        drawer.openDrawer(GravityCompat.START);
+        binding.drawer.openDrawer(GravityCompat.START);
     }
 
     private boolean switchFragment(@IdRes int id) {
@@ -120,13 +103,13 @@ public class MainActivity extends RxAppCompatActivity {
         }
     }
 
-    void onClickSelf(View v) {
+    private void onClickSelf(View v) {
         Intent intent = new Intent(this, UserActivity.class);
         intent.putExtra("user", user);
         intent.putExtra("from_post", "navigation");
 
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                this, avatar, "navigation_avatar");
+                this, headerBinding.avatar, "navigation_avatar");
 
         startActivity(intent, options.toBundle());
     }
